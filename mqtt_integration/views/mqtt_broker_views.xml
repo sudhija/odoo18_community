@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Views -->
+    <record id="view_mqtt_broker_tree" model="ir.ui.view">
+        <field name="name">mqtt.broker.tree</field>
+        <field name="model">mqtt.broker</field>
+        <field name="arch" type="xml">
+            <list string="Brokers">
+                <field name="name"/>
+                <field name="protocol"/>
+                <field name="clean_session" optional="hide"/>
+                <field name="client_id"/>
+                <field name="url_scheme" optional="hide"/>
+                <field name="host" optional="hide"/>
+                <field name="port" optional="hide"/>
+                <field name="status"/>
+                <field name="listener_status"/>
+                <field name="progressing_broker"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_mqtt_broker_form" model="ir.ui.view">
+        <field name="name">mqtt.broker.form</field>
+        <field name="model">mqtt.broker</field>
+        <field name="arch" type="xml">
+            <form string="Brokers">
+                <header>
+                    <field name="status" widget="statusbar" statusbar_visible="draft, connect, disconnect, error"/>
+                    <button name="action_renew_broker"
+                            type="object" string="Renew Broker"
+                            invisible="status == 'draft' or listener_status == 'new'"
+                            class="btn-primary"/>
+                    <button name="action_reconnect"
+                            type="object" string="Reconnect"
+                            invisible="status in ['draft', 'error', 'connect'], listener_status == 'new'"
+                            class="btn-primary"/>
+                    <button name="action_connection"
+                            type="object" string="Connect"
+                            invisible="status in ['connect', 'error']"
+                            class="btn-primary"/>
+                    <button name="action_disconnect"
+                            type="object" string="Disconnect"
+                            invisible="status in ['draft', 'disconnect', 'error']"
+                            class="btn-secondary"/>
+                    <button name="action_start_listener"
+                            type="object" string="Start Listener"
+                            invisible="status in ['draft', 'error'] or listener_status == 'run'"
+                            class="btn-primary"/>
+                    <button name="action_stop_listener"
+                            type="object" string="Stop Listener"
+                            invisible="listener_status in ['new', 'stop']"
+                            class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_review_subscription"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o"
+                                context="{'broker_id': id, 'status': 'subscribe'}">
+                            <div class="o_stat_info text-center d-flex flex-column align-items-center justify-content-center">
+                                <field name="broker_count" class="o_stat_value"/>
+                                <span class="o_stat_text" invisible="broker_count &lt; 2">
+                                    Subscriptions
+                                </span>
+                                <span class="o_stat_text" invisible="broker_count &gt; 1">
+                                    Subscription
+                                </span>
+                            </div>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name" required="1"/>
+                            <field name="protocol" readonly="id != False"/>
+                            <field name="clean_session" invisible="protocol == 'MQTTv5'"/>
+                            <field name="url_scheme" readonly="id != False"/>
+                            <field name="host" readonly="id != False"/>
+                            <field name="port" readonly="id != False"/>
+                            <field name="username" readonly="id != False"/>
+                            <field name="password" password="True" readonly="id != False"/>
+                        </group>
+                        <group>
+                            <field name="client_id" readonly="id != False"/>
+                            <field name="keepalive"/>
+                            <field name="host_info"/>
+                            <field name="auto_reconnect"/>
+                            <field name="listener_status"/>
+                            <field name="progressing_broker"/>
+                            <field name="last_connected"
+                                   readonly="id != False"
+                                   invisible="id == False or status != 'connect'"
+                            />
+                            <field name="last_started"
+                                   readonly="id != False"
+                                   invisible="id == False or listener_status != 'run'"
+                            />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_mqtt_broker" model="ir.actions.act_window">
+        <field name="name">Brokers</field>
+        <field name="res_model">mqtt.broker</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a Broker
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_mqtt_root"
+              name="MQTT Machine"
+              sequence="10"/>
+
+    <menuitem id="menu_mqtt_configuration"
+              name="MQTT Configuration"
+              parent="mqtt_integration.menu_mqtt_root"
+              sequence="100"/>
+
+    <menuitem id="menu_mqtt_brokers"
+              name="Brokers"
+              parent="mqtt_integration.menu_mqtt_configuration"
+              action="action_mqtt_broker"
+              sequence="1"/>
+
+</odoo>

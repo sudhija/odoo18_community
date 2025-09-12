@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Views -->
+    <record id="view_mqtt_subscription_tree" model="ir.ui.view">
+        <field name="name">mqtt.subscription.tree</field>
+        <field name="model">mqtt.subscription</field>
+        <field name="arch" type="xml">
+            <list string="Subscriptions">
+                <field name="name"/>
+                <field name="status"/>
+                <field name="direction"/>
+                <field name="format_payload" optional="hide"/>
+                <field name="broker_id"/>
+                <field name="topic_id"/>
+                <field name="payload"/>
+                <field name="qos" optional="hide"/>
+                <field name="retain" optional="hide"/>
+                <field name="subscription_time" optional="hide"/>
+                <field name="unsubscription_time" optional="hide"/>
+                <field name="progressing_subscription" optional="hide"/>
+                <field name="is_allow_user_property" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_mqtt_subscription_form" model="ir.ui.view">
+        <field name="name">mqtt.subscription.form</field>
+        <field name="model">mqtt.subscription</field>
+        <field name="arch" type="xml">
+            <form string="Subscription">
+                <header>
+                    <field name="status" widget="statusbar" statusbar_visible="new,subscribe,unsubscribe,fail"/>
+                    <button name="action_renew_subscription"
+                            type="object"
+                            string="Renew Subscription"
+                            invisible="status == 'new'"
+                            class="btn-primary"/>
+                    <button name="action_subscribe"
+                            type="object"
+                            string="Subscribe"
+                            invisible="status == 'subscribe'"
+                            class="btn-primary"/>
+                    <button name="action_unsubscribe"
+                            type="object"
+                            string="Unsubscribe"
+                            invisible="status in ['unsubscribe', 'fail', 'new']"
+                            class="btn-secondary"/>
+                    <button name="action_publish_message"
+                            type="object"
+                            string="Publish Message"
+                            invisible="status != 'subscribe' or direction == 'incoming'"
+                            class="btn-primary"/>
+                    <button name="action_format_json_payload"
+                            string="Format JSON"
+                            type="object"
+                            class="btn-primary"
+                            invisible="format_payload != 'json'"/>
+                    <button name="action_validate_payload"
+                            type="object"
+                            string="Validate Payload"
+                            invisible="format_payload == 'plaintext'"
+                            class="btn-info"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_review_topic" type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o"
+                                context="{'id': topic_id, 'broker_id': broker_id}">
+                            <div class="o_stat_info text-center d-flex flex-column align-items-center justify-content-center">
+                                <field name="topic_count" class="o_stat_value"/>
+                                <span class="o_stat_text" invisible="topic_count &lt; 2">
+                                    Topics
+                                </span>
+                                <span class="o_stat_text" invisible="topic_count &gt; 1">
+                                    Topic
+                                </span>
+                            </div>
+                        </button>
+                        <button name="action_review_incoming_history" type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o"
+                                context="{'signal_id': id}">
+                            <div class="o_stat_info text-center d-flex flex-column align-items-center justify-content-center">
+                                <field name="incoming_message_count" class="o_stat_value"/>
+                                <span class="o_stat_text" invisible="incoming_message_count &lt; 2">
+                                    Incoming Messages
+                                </span>
+                                <span class="o_stat_text" invisible="incoming_message_count &gt; 1">
+                                    Incoming Message
+                                </span>
+                            </div>
+                        </button>
+                        <button name="action_review_outgoing_history" type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o"
+                                context="{'signal_id': id}">
+                            <div class="o_stat_info text-center d-flex flex-column align-items-center justify-content-center">
+                                <field name="outgoing_message_count" class="o_stat_value"/>
+                                <span class="o_stat_text" invisible="outgoing_message_count &lt; 2">
+                                    Outgoing Messages
+                                </span>
+                                <span class="o_stat_text" invisible="outgoing_message_count &gt; 1">
+                                    Outgoing Message
+                                </span>
+                            </div>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name" placeholder="MQTT Subscription..."/>
+                            <field name="broker_id"
+                                   options="{
+                                   'no_create': True,
+                                   'no_create_edit': True
+                                   }"/>
+                            <field name="topic_id"
+                                   options="{
+                                   'no_create': True,
+                                   'no_create_edit': True
+                                   }"/>
+                            <field name="is_allow_user_property"/>
+                            <field name="is_metadata_domain" invisible="is_allow_user_property == False"/>
+                            <field name="metadata_id"
+                                   options="{
+                                   'no_create': True,
+                                   'no_create_edit': True
+                                   }"
+                                   domain="is_metadata_domain and topic_id and [('topic_id', '=', topic_id)] or []"
+                                   invisible="is_allow_user_property == False"/>
+                            <field name="format_payload"/>
+                            <field name="qos"/>
+                            <field name="retain"/>
+                        </group>
+                        <group>
+                            <field name="direction"/>
+                            <field name="progressing_subscription" readonly="1"/>
+                            <field name="create_date" readonly="1"/>
+                            <field name="publish_at" readonly="1"/>
+                            <field name="subscription_time" readonly="1"/>
+                            <field name="unsubscription_time" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="payload_page" string="Payload">
+                            <field name="payload"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_mqtt_subscription" model="ir.actions.act_window">
+        <field name="name">Subscriptions</field>
+        <field name="res_model">mqtt.subscription</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create new subscription.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_mqtt_subscription"
+              name="Subscriptions"
+              parent="mqtt_integration.menu_mqtt_configuration"
+              action="action_mqtt_subscription"
+              sequence="2"/>
+
+</odoo>

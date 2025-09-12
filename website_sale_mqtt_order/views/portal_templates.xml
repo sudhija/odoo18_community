@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Removed list-page column injection for compatibility; keep detail view only. -->
+    <template id="portal_my_order_inherit" inherit_id="sale.sale_order_portal_template" name="Portal Order Status Detail">
+        <xpath expr="//div[@id='quote_content']" position="inside">
+            <div class="alert alert-info mt16" t-if="order">
+                <strong>Order Status:</strong>
+                <span t-field="order.mqtt_status"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>

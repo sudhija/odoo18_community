@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Views -->
+    <record id="view_mqtt_metadata_tree" model="ir.ui.view">
+        <field name="name">mqtt.metadata.tree</field>
+        <field name="model">mqtt.metadata</field>
+        <field name="arch" type="xml">
+            <list string="Metadata">
+                <field name="name"/>
+                <field name="topic_id" optional="hide"/>
+                <field name="direction"/>
+                <field name="subscription_id" optional="hide"/>
+                <field name="history_id" optional="hide"/>
+                <field name="content_type" optional="hide"/>
+                <field name="format_payload" optional="hide"/>
+                <field name="expiry" optional="hide"/>
+                <field name="response_topic" optional="hide"/>
+                <field name="correlation_data" optional="hide"/>
+                <field name="subscription_identifier" optional="hide"/>
+                <field name="timestamp"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_mqtt_metadata_form" model="ir.ui.view">
+        <field name="name">mqtt.metadata.form</field>
+        <field name="model">mqtt.metadata</field>
+        <field name="arch" type="xml">
+            <form string="Metadata">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" required="1" readonly="direction == 'incoming'"/>
+                            <field name="timestamp"/>
+                            <field name="direction" readonly="direction == 'incoming'"/>
+                            <field name="topic_id" readonly="direction == 'incoming'"/>
+                            <field name="history_id" invisible="direction == 'outgoing'" readonly="direction == 'incoming'"/>
+                            <field name="content_type" readonly="direction == 'incoming'"/>
+                            <field name="format_payload" readonly="direction == 'incoming'"/>
+                        </group>
+                        <group>
+                            <field name="expiry" readonly="direction == 'incoming'"/>
+                            <field name="response_topic" readonly="direction == 'incoming'"/>
+                            <field name="correlation_data" readonly="direction == 'incoming'"/>
+                            <field name="subscription_identifier" readonly="direction == 'incoming'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="user_property_page" string="Metadata (User Properties)">
+                            <field name="metadata_value_ids"
+                                   readonly="direction == 'incoming'"
+                                   context="{
+                                   'default_metadata_id': id,
+                                   'default_topic_id': topic_id
+                                   }">
+                                <list editable="bottom">
+                                    <field name="key" readonly="parent.direction == 'incoming'"/>
+                                    <field name="value" readonly="parent.direction == 'incoming'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_mqtt_metadata" model="ir.actions.act_window">
+        <field name="name">Metadata</field>
+        <field name="res_model">mqtt.metadata</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create new Metadata.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_mqtt_user_properties"
+              name="User Properties"
+              parent="mqtt_integration.menu_mqtt_configuration"
+              sequence="4"/>
+
+    <menuitem id="menu_mqtt_metadata"
+              name="Metadata"
+              parent="menu_mqtt_user_properties"
+              action="action_mqtt_metadata"
+              sequence="1"/>
+
+</odoo>

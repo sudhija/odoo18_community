@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Views -->
+    <record id="view_mqtt_user_property_value_tree" model="ir.ui.view">
+        <field name="name">mqtt.user.property.value.tree</field>
+        <field name="model">mqtt.metadata.value</field>
+        <field name="arch" type="xml">
+            <list string="Metadata values" create="false">
+                <field name="name"/>
+                <field name="key"/>
+                <field name="value"/>
+                <field name="timestamp"/>
+                <field name="metadata_id" optional="hide"/>
+                <field name="topic_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_mqtt_metadata_value_search" model="ir.ui.view">
+        <field name="name">mqtt.metadata.value.search</field>
+        <field name="model">mqtt.metadata.value</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="key"/>
+                <field name="value"/>
+                <field name="topic_id"/>
+                <filter name="group_by_metadata" string="Group by Metadata" context="{'group_by':'metadata_id'}"/>
+                <filter name="group_by_subscription" string="Group by Subscription" context="{'group_by':'topic_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_mqtt_metadata_value" model="ir.actions.act_window">
+        <field name="name">Metadata values</field>
+        <field name="res_model">mqtt.metadata.value</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_mqtt_user_property_value_tree"/>
+        <field name="search_view_id" ref="view_mqtt_metadata_value_search"/>
+        <field name="context">{'group_by': ['topic_id', 'metadata_name']}</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_mqtt_metadata_value"
+              name="Metadata values"
+              parent="menu_mqtt_user_properties"
+              action="action_mqtt_metadata_value"
+              sequence="2"/>
+
+</odoo>

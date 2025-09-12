@@ -1,0 +1,157 @@
+<section class="oe_container">
+    <div class="oe_row oe_spaced">
+        <h2 class="oe_slogan">MQTT Listener for Odoo</h2>
+        <h3 class="oe_slogan">Seamless IoT Integration with Real-time MQTT Communication</h3>
+        <h4 class="oe_slogan" style="font-size: 23px;">Doan Man -
+            <a href='https://github.com/doanmandev'>Github</a></h4>
+    </div>
+</section>
+
+<section class="oe_container">
+    <div class="oe_row oe_spaced">
+        <div class="text-justify" style="max-width: 84%; margin: 16px 8%;">
+            <h3 class="oe_slogan">Overview</h3>
+            <p class="oe_mt32 text-justify">
+                MQTT Listener is a robust Odoo module designed to establish bidirectional communication between your Odoo instance and IoT devices, external systems, or services using the lightweight MQTT protocol. Built on top of the MQTT Integration, this module provides a complete implementation with automatic connection management, message persistence, and a user-friendly interface to monitor and control your MQTT services.
+            </p>
+            <div class="oe_centered">
+                <img class="oe_picture oe_screenshot" src="mqtt_architecture.png" alt="MQTT Architecture">
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container oe_dark">
+    <div class="oe_row oe_spaced">
+        <div class="text-justify" style="max-width: 84%; margin: 16px 8%;">
+            <h3 class="oe_slogan">Key Features</h3>
+            <div class="oe_span6">
+                <div class="oe_row_img oe_centered">
+                    <img class="oe_picture" src="mqtt_features.png" alt="MQTT Key Features">
+                </div>
+            </div>
+            <div class="oe_span6">
+                <p class="oe_mt32">
+                    <ul>
+                        <li><strong>Automatic Connection Management:</strong> Handles connection, disconnection, and reconnection with the MQTT broker automatically</li>
+                        <li><strong>Thread-based Architecture:</strong> Runs as a background daemon thread that maintains connection even during Odoo operations</li>
+                        <li><strong>Message History:</strong> Records all sent and received MQTT messages for traceability and debugging</li>
+                        <li><strong>Multiple Topic Support:</strong> Subscribe to multiple topics with wildcards support</li>
+                        <li><strong>User-friendly Interface:</strong> Control and monitor MQTT services directly from the Odoo UI</li>
+                        <li><strong>Auto-start Capability:</strong> Automatically starts the MQTT service when Odoo server boots</li>
+                    </ul>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container">
+    <div class="oe_row oe_spaced">
+        <div class="text-justify" style="max-width: 84%; margin: 16px 8%;">
+            <h3 class="oe_slogan">Technical Specifications</h3>
+            <p class="oe_mt32 text-justify">
+                <ul>
+                    <li><strong>Default Broker:</strong> broker.emqx.io:1883 (Customizable)</li>
+                    <li><strong>Default Topics:</strong> mqtt/test (QoS 0), mqtt/# (QoS 0)</li>
+                    <li><strong>Connection Monitoring:</strong> Real-time status tracking and automatic reconnection</li>
+                    <li><strong>Thread Management:</strong> Global thread registry with safe start/stop operations</li>
+                    <li><strong>Message Format:</strong> Support for various payload formats including JSON</li>
+                    <li><strong>Dependencies:</strong> mqtt_integration, paho-mqtt library</li>
+                </ul>
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container oe_dark">
+    <div class="oe_row oe_spaced">
+        <div class="text-justify" style="max-width: 84%; margin: 16px 8%;">
+            <h3 class="oe_slogan">Requirements</h3>
+            <p class="oe_mt32 text-justify">
+                For the proper functioning of this module, you need:
+                <ul>
+                    <li>
+                        <p>
+                            <strong>Paho-MQTT Library:</strong> <br>
+                            <span style='padding-left:5em'>
+                                A Python library developed by Eclipse for MQTT protocol communication. Install via pip:
+                                <code>pip install paho-mqtt</code>
+                                (Official site: <a href="https://pypi.org/project/paho-mqtt/" target="_blank">https://pypi.org/project/paho-mqtt/</a>)
+                            </span>
+                        </p>
+                    </li>
+                    <li>
+                        <p>
+                            <strong>MQTT Broker:</strong> <br>
+                            <span style='padding-left:5em'>
+                                An MQTT broker is required to distribute messages between devices and Odoo. 
+                                By default, this module connects to the public broker.emqx.io, but for production use, 
+                                we recommend setting up your own broker like Mosquitto or EMQ X.
+                                (<a href='https://mosquitto.org/' target="_blank">Mosquitto</a> or 
+                                <a href='https://www.emqx.io/' target="_blank">EMQ X</a>)
+                            </span>
+                        </p>
+                    </li>
+                    <li>
+                        <p>
+                            <strong>MQTT Integration:</strong> <br>
+                            <span style='padding-left:5em'>
+                                This module requires the mqtt_integration module to be installed first.
+                            </span>
+                        </p>
+                    </li>
+                </ul>
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container">
+    <div class="oe_row oe_spaced">
+        <h3 class="oe_slogan">Installation & Configuration</h3>
+        <div>
+            <p class="oe_mt32 text-justify">
+                <ol>
+                    <li>Install the required dependencies: <code>pip install paho-mqtt psutil</code></li>
+                    <li>Install the mqtt_integration module</li>
+                    <li>Install this module (mqtt_listener)</li>
+                    <li>The service will automatically start on server boot thanks to the post_load hook</li>
+                    <li>Configure your connection parameters if needed through the MQTT Service interface</li>
+                </ol>
+            </p>
+            <div class="oe_centered">
+                <img class="oe_picture oe_screenshot" src="mqtt_interface.png" alt="MQTT Interface Screenshot">
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container oe_dark">
+    <div class="oe_row oe_spaced">
+        <div class="text-justify" style="max-width: 84%; margin: 16px 8%;">
+            <h3 class="oe_slogan">Use Cases</h3>
+            <p class="oe_mt32 text-justify">
+                <ul>
+                    <li><strong>IoT Device Integration:</strong> Connect sensors, actuators, and smart devices directly to Odoo</li>
+                    <li><strong>Manufacturing Automation:</strong> Real-time monitoring of production lines and equipment</li>
+                    <li><strong>Warehouse Management:</strong> Track inventory movements with RFID or barcode scanners</li>
+                    <li><strong>Remote Monitoring:</strong> Monitor environmental conditions or equipment status</li>
+                    <li><strong>Inter-system Communications:</strong> Exchange data between Odoo and other business systems</li>
+                </ul>
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="oe_container">
+    <div class="oe_row oe_spaced">
+        <div class="text-justify" style="max-width: 84%; margin: 16px 8%;">
+            <h3 class="oe_slogan">Support & Development</h3>
+            <p class="oe_mt32 text-justify">
+                For any questions, bug reports, or customization requests, please contact the author.<br/>
+                Want to extend this module? Check our comprehensive documentation in the /doc directory.
+            </p>
+        </div>
+    </div>
+</section>
