@@ -1,0 +1,15 @@
+<odoo>
+  <menuitem id="menu_website_hotel_root" name="Website Hotel" sequence="98"/>
+  <record id="action_hotel_rooms_generic" model="ir.actions.act_window">
+    <field name="name">Rooms</field>
+    <field name="res_model">hotel.room</field>
+    <field name="view_mode">list,form</field>
+  </record>
+  <menuitem id="menu_hotel_rooms" name="Hotel Rooms" parent="menu_website_hotel_root" action="action_hotel_rooms_generic" sequence="1"/>
+  <record id="action_hotel_bookings_generic" model="ir.actions.act_window">
+    <field name="name">Bookings</field>
+    <field name="res_model">room.booking</field>
+    <field name="view_mode">list,form</field>
+  </record>
+  <menuitem id="menu_hotel_bookings" name="Bookings" parent="menu_website_hotel_root" action="action_hotel_bookings_generic" sequence="2"/>
+</odoo>

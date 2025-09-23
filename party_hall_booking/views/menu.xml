@@ -1,0 +1,24 @@
+<odoo>
+    <record id="action_party_hall" model="ir.actions.act_window">
+        <field name="name">Party Halls</field>
+        <field name="res_model">party.hall</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_party_hall_booking" model="ir.actions.act_window">
+        <field name="name">Bookings</field>
+        <field name="res_model">party.hall.booking</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_party_hall_photo" model="ir.actions.act_window">
+        <field name="name">Hall Photos</field>
+        <field name="res_model">party.hall.photo</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_party_hall_root" name="Party Hall Booking" sequence="50"/>
+    <menuitem id="menu_party_hall" name="Party Halls" parent="menu_party_hall_root" action="action_party_hall"/>
+    <menuitem id="menu_party_hall_photo" name="Hall Photos" parent="menu_party_hall_root" action="action_party_hall_photo"/>
+    <menuitem id="menu_party_hall_booking" name="Bookings" parent="menu_party_hall_root" action="action_party_hall_booking"/>
+</odoo>

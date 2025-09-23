@@ -1,0 +1,109 @@
+<odoo>
+    <!-- Inherit Contact Form -->
+    <record id="view_partner_form_inherit_custom" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.custom</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <!-- Place Additional Info AFTER built-in fields, before notebook -->
+            <xpath expr="//sheet/notebook" position="before">
+                <group string="Additional Info" colspan="4">
+                    <group>
+                        <field name="business_category_id" string="Business Category"/>
+                        <field name="fc_circle_id" string="FC Circle"/>
+                        <field name="instagram_id" string="Instagram ID"/>
+                    </group>
+                    <group>
+                        <field name="passport_photo" string="Passport Photo" widget="image" class="oe_avatar"/>
+                        <field name="visiting_card_photo" string="Visiting Card Photo" widget="image" class="oe_avatar"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+
+    <!--TALUK AND DISTRICT FIELDS-->
+
+    
+
+    <!-- List and Form views for Business Category -->
+    <record id="view_business_category_list" model="ir.ui.view">
+        <field name="name">business.category.list</field>
+        <field name="model">business.category</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_business_category_form" model="ir.ui.view">
+        <field name="name">business.category.form</field>
+        <field name="model">business.category</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- List and Form views for FC Circle -->
+    <record id="view_fc_circle_list" model="ir.ui.view">
+        <field name="name">fc.circle.list</field>
+        <field name="model">fc.circle</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_fc_circle_form" model="ir.ui.view">
+        <field name="name">fc.circle.form</field>
+        <field name="model">fc.circle</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Menus under Contacts main menu -->
+    <menuitem id="menu_contacts_extension_root"
+              name="Contacts Configuration"
+              parent="contacts.menu_contacts"
+              sequence="19"/>
+
+    <record id="action_business_category" model="ir.actions.act_window">
+        <field name="name">Business Categories</field>
+        <field name="res_model">business.category</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_business_category"
+              name="Business Categories"
+              parent="menu_contacts_extension_root"
+              action="action_business_category"
+              sequence="1"/>
+
+    <record id="action_fc_circle" model="ir.actions.act_window">
+        <field name="name">FC Circles</field>
+        <field name="res_model">fc.circle</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_fc_circle"
+              name="FC Circles"
+              parent="menu_contacts_extension_root"
+              action="action_fc_circle"
+              sequence="2"/>
+</odoo>

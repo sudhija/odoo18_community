@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- LISTING PAGE -->
+    <template id="list_template" name="Party Halls Listing">
+        <t t-call="website.layout">
+            <div class="container my-6">
+                <h1 class="mb-4">Choose Your Party Hall</h1>
+                <div class="row">
+                    <t t-foreach="halls" t-as="h">
+                        <div class="col-lg-12 mb-4 card-venue">
+                            <div class="d-flex flex-row p-3 border rounded shadow-sm">
+                                <div class="thumb me-3">
+                                    <img t-att-src="'/web/image/party.hall/%s/image_1920' % h.id"
+                                         class="img-thumbnail"
+                                         style="width:260px;height:160px;object-fit:cover;"/>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="mb-1"><t t-esc="h.name"/></h4>
+                                            <div class="text-muted"><i class="fa fa-map-marker"/> <t t-esc="h.location"/></div>
+                                            <div class="mt-2">
+                                                <span class="badge bg-success" t-if="h.is_recommended">Recommended</span>
+                                                <span class="badge bg-light text-dark">Capacity: <t t-esc="h.capacity"/></span>
+                                                <span class="badge bg-light text-dark" t-if="h.only_veg">Only-Veg</span>
+                                                <span class="badge bg-light text-dark">Halls: <t t-esc="h.halls_count"/></span>
+                                            </div>
+                                            <t t-if="h.facility_ids">
+                                                <div class="facilities-section mt-2">
+                                                    <h6 class="fw-bold mb-2" style="color: red;">Facilities:</h6>
+                                                    <ul>
+                                                        <t t-foreach="h.facility_ids" t-as="f">
+                                                            <li><t t-esc="f.name"/></li>
+                                                        </t>
+                                                    </ul>
+                                                </div>
+                                            </t>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="price h4 mb-2">₹ <t t-esc="('%.0f' % h.price) if h.price else '-'"/></div>
+                                            <a t-att-href="'/party_hall/%s' % h.id" class="btn btn-danger">Check Availability</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- DETAIL PAGE -->
+    <template id="detail_template" name="Party Hall Detail">
+        <t t-call="website.layout">
+            <div class="container my-6">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <img t-att-src="'/web/image/party.hall/%s/image_1920' % hall.id"
+                             class="img-fluid rounded mb-3"
+                             style="width:100%;height:360px;object-fit:cover;"/>
+                        <div class="d-flex gap-2 flex-wrap mb-3">
+                            <t t-foreach="hall.photos_ids" t-as="ph">
+                                <img t-att-src="'/web/image/party.hall.photo/%s/image_1920' % ph.id"
+                                     style="width:120px;height:80px;object-fit:cover;"
+                                     class="rounded border"/>
+                            </t>
+                        </div>
+                        <h2 class="mb-1"><t t-esc="hall.name"/></h2>
+                        <div class="text-muted mb-3"><i class="fa fa-map-marker"/> <t t-esc="hall.location"/></div>
+                        <div class="row g-2 mb-4">
+                            <div class="col-auto"><span class="badge bg-success" t-if="hall.is_recommended">Recommended</span></div>
+                            <div class="col-auto"><span class="badge bg-light text-dark">Capacity: <t t-esc="hall.capacity"/></span></div>
+                            <div class="col-auto" t-if="hall.only_veg"><span class="badge bg-light text-dark">Only‑Veg</span></div>
+                            <div class="col-auto"><span class="badge bg-light text-dark">Halls: <t t-esc="hall.halls_count"/></span></div>
+                        </div>
+                        <div class="mb-4">
+                            <t t-if="hall.facility_ids">
+                                <div class="facilities-section mt-3">
+                                    <h6 class="fw-bold mb-2" style="color: red; font-size: 20px;">Facilities:</h6>
+                                    <ul style="font-size: 14px; list-style-type: disc; margin-left: 20px;">
+                                        <t t-foreach="hall.facility_ids" t-as="f">
+                                            <li><t t-esc="f.name"/></li>
+                                        </t>
+                                    </ul>
+                                </div>
+                            </t>
+                            <t t-if="hall.description">
+                                <p><t t-esc="hall.description"/></p>
+                            </t>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="border rounded p-3 sticky-top" style="top:90px">
+                            <div class="h4">₹ <t t-esc="('%.0f' % hall.price) if hall.price else '-'"/></div>
+                            <t t-if="availability_message">
+                                <div t-attf-class="alert {{ 'alert-success' if availability_success else 'alert-danger' }}">
+                                    <t t-esc="availability_message"/>
+                                </div>
+                            </t>
+                            <!-- AVAILABILITY CHECK FORM -->
+                            <form action="/check_availability" method="POST" class="mt-3">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <input type="hidden" name="hall_id" t-att-value="hall.id"/>
+                                <div class="mb-2">
+                                    <label class="form-label">Booking Date</label>
+                                    <input type="date" name="booking_date" class="form-control"
+                                           t-att-value="(prefill.get('booking_date') if prefill else '')"
+                                           t-att-min="today"
+                                           required="required"/>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Slot</label>
+                                    <select name="slot" class="form-select" required="required">
+                                        <option value="morning" t-att-selected="(prefill.get('slot')=='morning') if prefill else False">Morning (9:00 AM - 3:00 PM)</option>
+                                        <option value="evening" t-att-selected="(prefill.get('slot')=='evening') if prefill else False">Evening (4:00 PM - 9:00 PM)</option>
+                                        <option value="full_day" t-att-selected="(prefill.get('slot')=='full_day') if prefill else False">Full Day (9:00 AM - 9:00 PM)</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-outline-primary w-100">Check Availability</button>
+                            </form>
+                            <hr/>
+                            <!-- BOOKING FORM -->
+                            <form id="bookingForm" action="/booking_submit" method="POST">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <input type="hidden" name="hall_id" t-att-value="hall.id"/>
+                                <div class="mb-2">
+                                    <label class="form-label">Your Name</label>
+                                    <input type="text" name="customer_name" class="form-control" required="required"/>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" name="customer_email" class="form-control"/>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Phone</label>
+                                    <input type="text" name="customer_phone" class="form-control"/>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Notes</label>
+                                    <textarea name="notes" class="form-control"></textarea>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Booking Date</label>
+                                    <input type="date" name="booking_date" class="form-control"
+                                           t-att-value="(prefill.get('booking_date') if prefill else '')"
+                                           t-att-min="today"
+                                           required="required"/>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Slot</label>
+                                    <select name="slot" class="form-select" required="required">
+                                        <option value="morning" t-att-selected="(prefill.get('slot')=='morning') if prefill else False">Morning (9:00 AM - 3:00 PM)</option>
+                                        <option value="evening" t-att-selected="(prefill.get('slot')=='evening') if prefill else False">Evening (4:00 PM - 9:00 PM)</option>
+                                        <option value="full_day" t-att-selected="(prefill.get('slot')=='full_day') if prefill else False">Full Day (9:00 AM - 9:00 PM)</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-danger w-100">Book Now</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- JS Validation (OUTSIDE FORM/DIV so XML is valid) -->
+            <script type="text/javascript">
+                document.addEventListener('DOMContentLoaded', function() {
+                    const form = document.getElementById('bookingForm');
+                    form.addEventListener('submit', function(e) {
+                        let valid = true;
+                        // Remove old error messages
+                        const oldErrors = form.querySelectorAll('.error-message');
+                        oldErrors.forEach(err => err.remove());
+                        const nameField = form.querySelector('[name="customer_name"]');
+                        const phoneField = form.querySelector('[name="customer_phone"]');
+                        // Full name: alphabets only
+                        const nameRegex = /^[A-Za-z\s]+$/;
+                        if (!nameField.value.trim() || !nameRegex.test(nameField.value.trim())) {
+                            showError(nameField, 'Full Name is required and must contain only alphabets.');
+                            valid = false;
+                        }
+                        // Phone: exactly 10 digits
+                        const phoneRegex = /^\d{10}$/;
+                        if (!phoneRegex.test(phoneField.value.trim())) {
+                            showError(phoneField, 'Phone number is required and must be exactly 10 digits.');
+                            valid = false;
+                        }
+                        if (!valid) e.preventDefault();
+                    });
+                    function showError(field, message) {
+                        const errorMsg = document.createElement('span');
+                        errorMsg.classList.add('error-message');
+                        errorMsg.style.color = 'red';
+                        errorMsg.style.fontSize = '12px';
+                        errorMsg.style.display = 'block';
+                        errorMsg.style.marginTop = '2px';
+                        errorMsg.textContent = message;
+                        field.insertAdjacentElement('afterend', errorMsg);
+                    }
+                });
+            </script>
+        </t>
+    </template>
+
+    <!-- THANKS -->
+   <!-- THANKS -->
+<template id="thanks_template" name="Booking Thanks">
+    <t t-call="website.layout">
+        <div class="container my-6 text-center">
+            <h2 class="text-success">🎉 Thank you for your booking!</h2>
+            <p>We received your request. Our team will contact you shortly.</p>
+            
+            <a href="/party_halls" class="btn btn-secondary mt-3">Back to Halls</a>
+                      
+            <!-- Catering Info Section -->
+               <div style="margin-top:30px; background:#fff0f5; padding:20px; border-radius:10px;">
+                <!-- Your red line -->
+                <p style="font-size:18px; color:red; font-weight:bold; margin-bottom:15px;">
+                    Looking for catering? Customize your menu for an event!
+                </p>
+                
+                <p style="font-size:16px; color:#000000; margin-bottom:15px;">
+                    Check out our catering service here!
+                </p>
+                  
+                <!-- Order Catering Button -->
+                <a href="/catering-service" class="btn btn-primary mt-3"> Catering Service</a>
+            </div>
+        </div>
+    </t>
+</template>
+
+
+    <!-- FAILED -->
+    <template id="failed_template" name="Booking Failed">
+        <t t-call="website.layout">
+            <div class="container my-6 text-center">
+                <h2 class="text-danger">Booking Failed</h2>
+                <p t-esc="error">There was an error.</p>
+                <a href="/party_halls" class="btn btn-secondary mt-3">Back to Halls</a>
+            </div>
+        </t>
+    </template>
+
+    <!-- JS for Blocking Past Dates -->
+    <template id="block_past_dates_js" name="Block Past Dates JS" inherit_id="">
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function () {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInputs = document.querySelectorAll('input[type="date"]');
+            dateInputs.forEach(input => {
+                input.setAttribute('min', today);
+                });
+            });
+        </script>
+    </template>
+</odoo>

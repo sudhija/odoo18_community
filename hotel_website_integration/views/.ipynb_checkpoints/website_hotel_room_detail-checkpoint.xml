@@ -1,0 +1,68 @@
+<odoo>
+<template id="website_hotel_room_detail" name="Room Detail">
+  <t t-call="website.layout">
+    <div class="container hero">
+      <div class="row">
+        <!-- Left column: Images -->
+        <div class="col-md-6">
+          <t t-if="room.gallery_image_ids">
+            <div id="carouselRoomImages" class="carousel slide">
+              <div class="carousel-inner">
+                <t t-foreach="room.gallery_image_ids" t-as="img" t-esc-disabled="true">
+                  <div t-att-class="'carousel-item %s' % ('active' if loop.index == 1 else '')">
+                    <img t-att-src="'/web/image/website.hotel.room.image/%s/image_1920' % img.id"
+                         t-att-alt="room.name"
+                         class="d-block w-100 img-fluid rounded"/>
+                  </div>
+                </t>
+              </div>
+              <button class="carousel-control-prev" type="button" data-bs-target="#carouselRoomImages" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+              <button class="carousel-control-next" type="button" data-bs-target="#carouselRoomImages" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+            </div>
+          </t>
+
+          <!-- Fallback: cover image -->
+          <t t-elif="room.cover_image">
+            <img t-att-src="'/web/image/hotel.room/%s/cover_image' % room.id"
+                 t-att-alt="room.name"
+                 class="img-fluid rounded"/>
+          </t>
+
+          <!-- Fallback: product image -->
+          <t t-elif="product">
+            <img t-att-src="'/web/image/product.template/%s/image_1024' % product.id"
+                 t-att-alt="room.name"
+                 class="img-fluid rounded"/>
+          </t>
+        </div>
+
+        <!-- Right column: Details -->
+        <div class="col-md-6">
+          <h2><t t-esc="room.name"/></h2>
+          <t t-set="price" t-value="product and product.list_price or room.base_price or 0.0"/>
+          <p class="lead">
+            <t t-if="price">₹ <t t-esc="price"/> per night</t>
+            <t t-else="">Contact us for pricing</t>
+          </p>
+
+          <!-- Facilities -->
+          <div class="mb-2">
+            <t t-foreach="room.facility_ids" t-as="f">
+              <span class="badge bg-secondary me-1"><t t-esc="f.name"/></span>
+            </t>
+          </div>
+
+          <!-- Room description -->
+          <div class="mt-3">
+            <p><t t-esc="room.description or ''"/></p>
+          </div>
+
+          <!-- Booking button -->
+          <a t-att-href="'/hotel/room/%s/book?checkin=%s&amp;checkout=%s' % (room.id, request.params.get('checkin',''), request.params.get('checkout',''))"
+             class="btn btn-primary mt-2">Book this room</a>
+        </div>
+      </div>
+    </div>
+  </t>
+</template>
+</odoo>

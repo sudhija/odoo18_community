@@ -1,0 +1,391 @@
+<odoo>
+  <template id="website_hotel_booking_checkout" name="Hotel Checkout">
+    <t t-call="website.layout">
+      <div class="container hero">
+        <div class="row">
+          <div class="col-md-7">
+            <div class="card mb-3">
+              <div class="card-header">Traveller Information</div>
+              <div class="card-body">
+                <form method="post">
+                  <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                  <input type="hidden" name="checkin" t-att-value="checkin"/>
+                  <input type="hidden" name="checkout" t-att-value="checkout"/>
+                  <input type="hidden" name="guests" t-att-value="guests"/>
+
+                  <div class="row g-2">
+                    <div class="col-12">
+                      <input class="form-control" type="text" name="name" placeholder="Full Name" t-att-value="values.get('name','')" required="required"/>
+                      <small class="text-danger" t-if="errors.get('name')"><t t-esc="errors.get('name')"/></small>
+                    </div>
+                    <div class="col-12">
+                      <input class="form-control" type="email" name="email" placeholder="Email" t-att-value="values.get('email','')" required="required"/>
+                      <small class="text-danger" t-if="errors.get('email')"><t t-esc="errors.get('email')"/></small>
+                    </div>
+                    <div class="col-12">
+                      <input class="form-control" type="text" name="phone" placeholder="Phone" t-att-value="values.get('phone','')" required="required" pattern="[0-9]{7,}" title="Enter valid phone number"/>
+                      <small class="text-danger" t-if="errors.get('phone')"><t t-esc="errors.get('phone')"/></small>
+                    </div>
+                    <div class="col-12">
+                      <textarea class="form-control" name="special_requests" placeholder="Special Requests" rows="3"><t t-esc="values.get('special_requests','')"/></textarea>
+                    </div>
+
+                    <div class="col-12">
+                      <small class="text-danger" t-if="errors.get('date')"><t t-esc="errors.get('date')"/></small>
+                      <small class="text-danger" t-if="errors.get('checkin')"><t t-esc="errors.get('checkin')"/></small>
+                      <small class="text-danger" t-if="errors.get('checkout')"><t t-esc="errors.get('checkout')"/></small>
+                      <small class="text-danger" t-if="errors.get('guests')"><t t-esc="errors.get('guests')"/></small>
+                      <small class="text-danger" t-if="errors.get('availability')"><t t-esc="errors.get('availability')"/></small>
+                    </div>
+                  </div>
+
+                  <!-- Direct Pay -->
+                  <button type="submit" name="direct" value="1" class="btn btn-primary">Book &amp; Pay Now</button>
+
+                  <!-- Add to Cart -->
+                  <button type="submit" class="btn btn-outline-secondary">Add to Cart</button>
+
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-5">
+            <div class="card">
+              <div class="card-header">Your Selection</div>
+              <div class="card-body">
+                <div class="d-flex justify-content-between"><span>Check in</span><strong><t t-esc="checkin"/></strong></div>
+                <div class="d-flex justify-content-between"><span>Check out</span><strong><t t-esc="checkout"/></strong></div>
+                <div class="d-flex justify-content-between"><span>Room</span><strong><t t-esc="room.name"/></strong></div>
+                <div class="d-flex justify-content-between"><span>Guests</span><strong><t t-esc="guests"/></strong></div>
+                <div class="d-flex justify-content-between"><span>Nights</span><strong><t t-esc="nights"/></strong></div>
+                <hr/>
+                <div class="d-flex justify-content-between"><span>Amount</span><strong>&#8377; <t t-esc="('%.2f' % subtotal)"/></strong></div>
+                <t t-if="pay_now_discount and pay_now_discount &gt; 0">
+                  <div class="d-flex justify-content-between"><span>Discount</span><strong>- &#8377; <t t-esc="('%.2f' % pay_now_discount)"/></strong></div>
+                </t>
+                <div class="d-flex justify-content-between"><span>Taxes</span><strong>&#8377; <t t-esc="('%.2f' % (tax or 0.0))"/>
+</strong></div>
+                <hr/>
+                <div class="d-flex justify-content-between"><span>Total Amount</span><strong>&#8377; <t t-esc="('%.2f' % total)"/></strong></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </t>
+  </template>
+
+  <template id="website_hotel_booking_thanks" name="Hotel Booking Thanks">
+    <t t-call="website.layout">
+      <div class="container my-5">
+        <div class="card shadow-lg rounded-3 p-5 text-center">
+          <h1 class="text-success mb-3">Thank You for Your Booking!</h1>
+          <p class="lead">Your booking has been successfully confirmed.</p>
+          <hr class="my-4"/>
+          <p>Booking Reference: <strong t-esc="booking.id"/></p>
+          <p>Room: <strong t-esc="booking.room_id.name"/></p>
+          <p>Check-in: <strong t-esc="booking.check_in"/></p>
+          <p>Check-out: <strong t-esc="booking.check_out"/></p>
+
+          <!-- Show enabled payment methods (TC_011) -->
+          <div class="mt-4">
+            <h5 class="mb-3">Available Payment Methods</h5>
+            <t t-if="providers">
+              <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <t t-foreach="providers" t-as="p">
+                  <span class="badge bg-primary">
+                    <t t-esc="p.name"/>
+                  </span>
+                </t>
+              </div>
+            </t>
+            <t t-else="">
+              <p class="text-muted">No online payment methods are enabled yet.</p>
+            </t>
+          </div>
+
+          <a href="/" class="btn btn-primary mt-4">Back to Home</a>
+        </div>
+      </div>
+    </t>
+  </template>
+
+  <template id="website_hotel_redirect_payment" name="Redirect to Payment">
+    <t t-call="website.layout">
+      <div class="container my-5">
+        <div class="card">
+          <div class="card-body">
+            <h3>Redirecting to Payment...</h3>
+            <p>Provider ID: <t t-esc="provider_id"/></p>
+            <p>Amount: <t t-esc="amount"/></p>
+            <p>Currency: <t t-esc="currency_id"/></p>
+            <p>Partner: <t t-esc="partner_id"/></p>
+            <p>Reference: <t t-esc="reference"/></p>
+            <form id="payForm" action="/payment/pay" method="post">
+              <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+              <input type="hidden" name="provider_id" t-att-value="provider_id"/>
+              <input type="hidden" name="amount" t-att-value="amount"/>
+              <input type="hidden" name="currency_id" t-att-value="currency_id"/>
+              <input type="hidden" name="partner_id" t-att-value="partner_id"/>
+              <input type="hidden" name="reference" t-att-value="reference"/>
+              <input type="hidden" name="return_url" t-att-value="return_url"/>
+              <noscript>
+                <button type="submit" class="btn btn-primary">Pay now</button>
+              </noscript>
+            </form>
+          </div>
+        </div>
+      </div>
+      <script>
+        console.log('Payment redirect script executing...');
+        var form = document.getElementById('payForm');
+        if (form) {
+          console.log('Form found, submitting...');
+          form.submit();
+        } else {
+          console.error('Payment form not found!');
+        }
+      </script>
+    </t>
+  </template>
+
+  <template id="debug_payment_info" name="Debug Payment Info">
+    <t t-call="website.layout">
+      <div class="container my-5">
+        <div class="card">
+          <div class="card-header">
+            <h3>Payment Provider Debug Information</h3>
+          </div>
+          <div class="card-body">
+            <p><strong>Total Providers:</strong> <t t-esc="debug_info['total_providers']"/></p>
+            <p><strong>Enabled Providers:</strong> <t t-esc="debug_info['enabled_providers']"/></p>
+            
+            <h4>Provider Details:</h4>
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>State</th>
+                    <th>Code</th>
+                    <th>Websites</th>
+                    <th>Currencies</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <t t-foreach="debug_info['provider_details']" t-as="provider">
+                    <tr>
+                      <td><t t-esc="provider['id']"/></td>
+                      <td><t t-esc="provider['name']"/></td>
+                      <td>
+                        <span t-if="provider['state'] == 'enabled'" class="badge bg-success">Enabled</span>
+                        <span t-else="" class="badge bg-secondary"><t t-esc="provider['state']"/></span>
+                      </td>
+                      <td><t t-esc="provider['code']"/></td>
+                      <td><t t-esc="provider['website_ids']"/></td>
+                      <td><t t-esc="provider['available_currency_ids']"/></td>
+                    </tr>
+                  </t>
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="mt-4">
+              <h5>Quick Actions:</h5>
+              <a href="/hotel" class="btn btn-primary">Go to Hotel</a>
+              <a href="/hotel/booking/thanks/1" class="btn btn-secondary">Test Thanks Page</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </t>
+  </template>
+
+  <!-- Payment Form Template -->
+  <template id="website_hotel_payment_form" name="Hotel Payment Form">
+    <t t-call="website.layout">
+      <div class="container my-5">
+        <div class="row justify-content-center">
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header">
+                <h3>Complete Your Payment</h3>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <h5>Booking Details</h5>
+                    <p><strong>Room:</strong> <t t-esc="room.name"/></p>
+                    <p><strong>Check-in:</strong> <t t-esc="checkin"/></p>
+                    <p><strong>Check-out:</strong> <t t-esc="checkout"/></p>
+                    <p><strong>Guests:</strong> <t t-esc="guests"/></p>
+                    <p><strong>Nights:</strong> <t t-esc="nights"/></p>
+                    <hr/>
+                    <p><strong>Total Amount:</strong> <t t-esc="provider.currency_id.symbol"/> <t t-esc="('%.2f' % subtotal)"/></p>
+                  </div>
+                  <div class="col-md-6">
+                    <h5>Payment Method</h5>
+                    <div class="text-center">
+                      <t t-if="getattr(provider, 'image_128', False)">
+                        <img t-att-src="'/web/image/payment.provider/%s/image_128' % provider.id" class="img-fluid mb-3" style="max-height: 50px;"/>
+                      </t>
+                      <h6><t t-esc="provider.name"/></h6>
+                      <p class="text-muted"><t t-esc="provider.description or 'Secure payment processing'"/></p>
+                    </div>
+                    
+                    <form id="paymentForm" t-att-action="provider._get_specific_rendering_values(tx).get('form_action', '/payment/pay')" method="post">
+                      <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                      <input type="hidden" name="provider_id" t-att-value="provider.id"/>
+                      <input type="hidden" name="amount" t-att-value="subtotal"/>
+                      <input type="hidden" name="currency_id" t-att-value="provider.currency_id.id"/>
+                      <input type="hidden" name="partner_id" t-att-value="tx.partner_id.id"/>
+                      <input type="hidden" name="reference" t-att-value="tx.reference"/>
+                      <input type="hidden" name="return_url" t-att-value="'/hotel/payment/confirm/%s' % tx.reference"/>
+                      
+                      <button type="submit" class="btn btn-primary btn-lg w-100">
+                        Pay <t t-esc="provider.currency_id.symbol"/> <t t-esc="('%.2f' % subtotal)"/>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </t>
+  </template>
+
+  <!-- Payment Success Template -->
+  <template id="website_hotel_payment_success" name="Hotel Payment Success">
+    <t t-call="website.layout">
+      <div class="container my-5">
+        <div class="row justify-content-center">
+          <div class="col-md-8">
+            <div class="card border-success">
+              <div class="card-header bg-success text-white">
+                <h3 class="mb-0">Payment Successful!</h3>
+              </div>
+              <div class="card-body text-center">
+                <div class="mb-4">
+                  <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                </div>
+                <h4>Your booking has been confirmed!</h4>
+                <p class="lead">Thank you for choosing our hotel.</p>
+                
+                <div class="row mt-4">
+                  <div class="col-md-6">
+                    <h6>Payment Details</h6>
+                    <p><strong>Transaction ID:</strong> <t t-esc="tx.reference"/></p>
+                    <p><strong>Amount Paid:</strong> <t t-esc="tx.currency_id.symbol"/> <t t-esc="('%.2f' % tx.amount)"/></p>
+                    <p><strong>Payment Method:</strong> <t t-esc="tx.provider_id.name"/></p>
+                  </div>
+                  <div class="col-md-6">
+                    <h6>Booking Details</h6>
+                    <p><strong>Booking ID:</strong> <t t-esc="booking.id"/></p>
+                    <p><strong>Status:</strong> <span class="badge bg-success">Confirmed</span></p>
+                    <p><strong>Email:</strong> <t t-esc="booking.email"/></p>
+                  </div>
+                </div>
+                
+                <div class="mt-4">
+                  <a href="/hotel" class="btn btn-primary">Book Another Room</a>
+                  <a href="/" class="btn btn-outline-secondary">Back to Home</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </t>
+  </template>
+
+  <!-- Payment Failed Template -->
+  <template id="website_hotel_payment_failed" name="Hotel Payment Failed">
+    <t t-call="website.layout">
+      <div class="container my-5">
+        <div class="row justify-content-center">
+          <div class="col-md-8">
+            <div class="card border-danger">
+              <div class="card-header bg-danger text-white">
+                <h3 class="mb-0">Payment Failed</h3>
+              </div>
+              <div class="card-body text-center">
+                <div class="mb-4">
+                  <i class="fas fa-times-circle text-danger" style="font-size: 4rem;"></i>
+                </div>
+                <h4>We're sorry, your payment could not be processed.</h4>
+                <p class="lead"><t t-esc="error"/></p>
+                
+                <div class="mt-4">
+                  <a href="/hotel" class="btn btn-primary">Try Again</a>
+                  <a href="/" class="btn btn-outline-secondary">Back to Home</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </t>
+  </template>
+
+  <!-- Payment Providers List Template -->
+<!-- Payment Providers List Template -->
+<!-- Payment Providers List Template -->
+<template id="website_hotel_payment_providers" name="Hotel Payment Providers">
+    <t t-call="website.layout">
+        <div class="container my-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2>Available Payment Methods</h2>
+                    <div class="row">
+                        <t t-if="providers">
+                            <t t-foreach="providers" t-as="provider">
+                                <div class="col-md-4 mb-3">
+                                    <div class="card">
+                                        <div class="card-body text-center">
+                                            <!-- Logo or Name -->
+                                            <t t-if="provider.image_128">
+                                                <img t-att-src="'data:image/png;base64,%s' % provider.image_128"
+                                                     alt="Provider Logo"
+                                                     class="img-fluid mb-2"
+                                                     style="max-height:80px;"/>
+                                            </t>
+                                            <t t-else="">
+                                                <h5 t-esc="provider.name"/>
+                                            </t>
+
+                                            <!-- Always show provider name below -->
+                                            <h5 class="mt-2" t-esc="provider.name"/>
+                                            
+                                            <!-- Info -->
+                                            <p class="text-muted">Secure payment processing</p>
+                                            
+                                            <!-- Status -->
+                                            <t t-if="provider.state == 'enabled'">
+                                                <span class="badge bg-success">Available</span>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="badge bg-secondary">Disabled</span>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </t>
+                        <t t-else="">
+                            <div class="col-12 text-center">
+                                <p>No payment providers available.</p>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</template>
+
+</odoo>

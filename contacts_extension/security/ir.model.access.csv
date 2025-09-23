@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_contacts_extension_user,access.contacts.extension.user,base.model_res_partner,base.group_user,1,1,1,1
+access_business_category_user,access.business.category.user,model_business_category,base.group_user,1,1,1,1
+access_fc_circle_user,access.fc.circle.user,model_fc_circle,base.group_user,1,1,1,1

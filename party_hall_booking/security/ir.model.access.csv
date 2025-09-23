@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_party_hall,Party Hall,model_party_hall,,1,1,1,1
+access_party_hall_booking,Party Hall Booking,model_party_hall_booking,,1,1,1,1
+access_party_hall_photo,Party Hall Photo,model_party_hall_photo,,1,1,1,1
+access_party_hall_facility,access_party_hall_facility,model_party_hall_facility,,1,1,1,1

@@ -1,0 +1,36 @@
+<odoo>
+    <record id="view_party_hall_booking_tree" model="ir.ui.view">
+        <field name="name">party.hall.booking.list</field>
+        <field name="model">party.hall.booking</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="customer_name"/>
+                <field name="hall_id"/>
+                <field name="booking_date"/>
+                <field name="slot"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_party_hall_booking_form" model="ir.ui.view">
+        <field name="name">party.hall.booking.form</field>
+        <field name="model">party.hall.booking</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="customer_name"/>
+                        <field name="hall_id"/>
+                        <field name="booking_date"/>
+                        <field name="slot"/>
+                        <field name="customer_email"/>
+                        <field name="customer_phone"/>
+                        <field name="notes"/>
+                        <field name="state"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

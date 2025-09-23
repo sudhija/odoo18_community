@@ -1,0 +1,79 @@
+<odoo>
+  <template id="website_hotel_home" name="ISM Hotel - Rooms">
+    <t t-call="website.layout">
+      <div class="container hero">
+        <h1>Available Rooms</h1>
+
+        <!-- Category Filter -->
+        <form action="/hotel/rooms" method="get" class="row g-2 mb-3">
+          <div class="col-md-3">
+            <input type="date" name="checkin" t-att-value="checkin" t-att-min="checkin_min" class="form-control"/>
+          </div>
+          <div class="col-md-3">
+            <input type="date" name="checkout" t-att-value="checkout" t-att-min="checkin" class="form-control"/>
+          </div>
+          <div class="col-md-2">
+            <select name="guests" class="form-control">
+              <t t-foreach="range(1, 6)" t-as="i">
+                <option t-att-value="i" t-att-selected="guests == i"><t t-esc="i"/></option>
+              </t>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <select name="category_id" class="form-control">
+              <option value="0" t-att-selected="not category_id">All Categories</option>
+              <t t-foreach="categories" t-as="cat">
+                <option t-att-value="cat.id" t-att-selected="category_id == cat.id"><t t-esc="cat.display_name"/></option>
+              </t>
+            </select>
+          </div>
+          <div class="col-md-1">
+            <button class="btn btn-primary w-100" type="submit">Search</button>
+          </div>
+        </form>
+
+        <div class="row mt-3">
+          <t t-foreach="cards" t-as="card">
+            <div class="col-md-6 mb-4">
+              <div class="card card-room">
+                <t t-if="card['room'].cover_image">
+                  <img t-att-src="'/web/image/hotel.room/%s/cover_image' % card['room'].id" class="card-img-top"/>
+                </t>
+                <t t-elif="card['room'].room_type">
+                  <img t-att-src="'/web/image/product.template/%s/image_512' % card['room'].room_type.id" class="card-img-top"/>
+                </t>
+
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title">
+                      <t t-esc="card['room'].name"/>
+                      <t t-if="card['room'].website_category_id">
+                        <span class="badge bg-info ms-2"><t t-esc="card['room'].website_category_id.display_name"/></span>
+                      </t>
+                    </h5>
+                    <span class="badge bg-success">Available</span>
+                  </div>
+
+                  <div class="mb-2">
+                    <t t-foreach="card['room'].facility_ids or []" t-as="f">
+                      <span class="badge bg-secondary me-1"><t t-esc="f.name"/></span>
+                    </t>
+                  </div>
+
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <small>Rate per night</small>
+                      <h4 class="m-0">&#8377; <t t-esc="('%.2f' % card['rate'])"/></h4>
+                    </div>
+                    <a t-attf-href="/hotel/room/{{ card['room'].id }}/book?checkin={{ checkin }}&amp;checkout={{ checkout }}&amp;guests={{ guests }}"
+                       class="btn btn-primary">Book</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </t>
+        </div>
+      </div>
+    </t>
+  </template>
+</odoo>

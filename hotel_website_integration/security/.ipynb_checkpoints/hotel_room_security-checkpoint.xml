@@ -1,0 +1,9 @@
+<odoo>
+    <!-- Public users: can only read published rooms -->
+    <record id="hotel_room_rule_public" model="ir.rule">
+        <field name="name">Hotel Room Public Rule</field>
+        <field name="model_id" ref="model_hotel_room"/>
+        <field name="groups" eval="[(4, ref('base.group_public'))]"/>
+        <field name="domain_force">[('is_published', '=', True)]</field>
+    </record>
+</odoo>

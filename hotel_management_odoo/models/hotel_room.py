@@ -46,6 +46,8 @@ class HotelRoom(models.Model):
                                    help="Check if the room is available")
     list_price = fields.Float(string='Rent', digits='Product Price',
                               help="The rent of the room.")
+    product_id = fields.Many2one('product.product', string='Sales Product',
+                                 help="Product used when selling this room via website/cart.")
     uom_id = fields.Many2one('uom.uom', string='Unit of Measure',
                              default=_get_default_uom_id, required=True,
                              help="Default unit of measure used for all stock"
@@ -83,6 +85,19 @@ class HotelRoom(models.Model):
                                 tracking=True)
     description = fields.Html(string='Description', help="Add description",
                               translate=True)
+
+    @api.onchange('product_id')
+    def _onchange_product_id_set_pricing(self):
+        """When a sales product is linked, align room price and taxes from product."""
+        if self.product_id:
+            try:
+                self.list_price = self.product_id.lst_price
+            except Exception:
+                pass
+            try:
+                self.taxes_ids = [(6, 0, self.product_id.taxes_id.ids)]
+            except Exception:
+                pass
 
     @api.constrains("num_person")
     def _check_capacity(self):

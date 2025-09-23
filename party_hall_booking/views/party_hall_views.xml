@@ -1,0 +1,61 @@
+<odoo>
+    <record id="view_party_hall_tree" model="ir.ui.view">
+        <field name="name">party.hall.list</field>
+        <field name="model">party.hall</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="location"/>
+                <field name="capacity"/>
+                <field name="price"/>
+                <field name="rating"/>
+                <field name="is_recommended"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_party_hall_form" model="ir.ui.view">
+        <field name="name">party.hall.form</field>
+        <field name="model">party.hall</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="image_1920" widget="image"/>
+                        <field name="location"/>
+                        <field name="capacity"/>
+                        <field name="price"/>
+                        <field name="rating"/>
+                        <field name="is_recommended"/>
+                        <field name="halls_count"/>
+                        <field name="only_veg"/>
+                    </group>
+                    <!-- ✅ Dynamic Facilities -->
+                    <group string="Facilities">
+                        <field name="facility_ids" widget="many2many_tags" options="{'no_create': False}"/>
+                    </group>
+                    <notebook>
+                        <page string="Photos">
+                            <field name="photos_ids" context="{'default_hall_id': id}">
+                                <list editable="bottom">
+                                    <field name="image_1920" widget="image"/>
+                                    <field name="name"/>
+                                </list>
+                                <form>
+                                    <group>
+                                        <field name="name"/>
+                                        <field name="image_1920" widget="image"/>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Description">
+                            <field name="description"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,107 @@
+<odoo>
+  <template id="website_hotel_booking_checkout" name="Hotel Checkout">
+    <t t-call="website.layout">
+      <div class="container hero">
+        <div class="row">
+          <div class="col-md-7">
+            <div class="card mb-3">
+              <div class="card-header">Traveller Information</div>
+              <div class="card-body">
+                <form method="post">
+                  <input type="hidden" name="checkin" t-att-value="checkin"/>
+                  <input type="hidden" name="checkout" t-att-value="checkout"/>
+                  <input type="hidden" name="guests" t-att-value="guests"/>
+
+                  <div class="row g-2">
+                    <div class="col-12">
+                      <input class="form-control" type="text" name="name" placeholder="Full Name" t-att-value="values.get('name','')" required="required"/>
+                      <small class="text-danger" t-if="errors.get('name')"><t t-esc="errors.get('name')"/></small>
+                    </div>
+                    <div class="col-12">
+                      <input class="form-control" type="email" name="email" placeholder="Email" t-att-value="values.get('email','')" required="required"/>
+                      <small class="text-danger" t-if="errors.get('email')"><t t-esc="errors.get('email')"/></small>
+                    </div>
+                    <div class="col-12">
+                      <input class="form-control" type="text" name="phone" placeholder="Phone" t-att-value="values.get('phone','')" required="required" pattern="[0-9]{7,}" title="Enter valid phone number"/>
+                      <small class="text-danger" t-if="errors.get('phone')"><t t-esc="errors.get('phone')"/></small>
+                    </div>
+                    <div class="col-12">
+                      <textarea class="form-control" name="special_requests" placeholder="Special Requests" rows="3"><t t-esc="values.get('special_requests','')"/></textarea>
+                    </div>
+
+                    <div class="col-12">
+                      <small class="text-danger" t-if="errors.get('date')"><t t-esc="errors.get('date')"/></small>
+                      <small class="text-danger" t-if="errors.get('checkin')"><t t-esc="errors.get('checkin')"/></small>
+                      <small class="text-danger" t-if="errors.get('checkout')"><t t-esc="errors.get('checkout')"/></small>
+                      <small class="text-danger" t-if="errors.get('guests')"><t t-esc="errors.get('guests')"/></small>
+                      <small class="text-danger" t-if="errors.get('availability')"><t t-esc="errors.get('availability')"/></small>
+                    </div>
+                  </div>
+
+                  <button class="btn btn-primary mt-3" type="submit">Confirm Booking</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-5">
+            <div class="card">
+              <div class="card-header">Your Selection</div>
+              <div class="card-body">
+                <div class="d-flex justify-content-between"><span>Check in</span><strong><t t-esc="checkin"/></strong></div>
+                <div class="d-flex justify-content-between"><span>Check out</span><strong><t t-esc="checkout"/></strong></div>
+                <div class="d-flex justify-content-between"><span>Room</span><strong><t t-esc="room.name"/></strong></div>
+                <div class="d-flex justify-content-between"><span>Guests</span><strong><t t-esc="guests"/></strong></div>
+                <div class="d-flex justify-content-between"><span>Nights</span><strong><t t-esc="nights"/></strong></div>
+                <hr/>
+                <div class="d-flex justify-content-between"><span>Amount</span><strong>&#8377; <t t-esc="('%.2f' % subtotal)"/></strong></div>
+                <t t-if="pay_now_discount and pay_now_discount &gt; 0">
+                  <div class="d-flex justify-content-between"><span>Discount</span><strong>- &#8377; <t t-esc="('%.2f' % pay_now_discount)"/></strong></div>
+                </t>
+                <div class="d-flex justify-content-between"><span>Taxes</span><strong>&#8377; <t t-esc="('%.2f' % tax)"/></strong></div>
+                <hr/>
+                <div class="d-flex justify-content-between"><span>Total Amount</span><strong>&#8377; <t t-esc="('%.2f' % total)"/></strong></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </t>
+  </template>
+
+  <template id="website_hotel_booking_thanks" name="Hotel Booking Thanks">
+    <t t-call="website.layout">
+      <div class="container my-5">
+        <div class="card shadow-lg rounded-3 p-5 text-center">
+          <h1 class="text-success mb-3">Thank You for Your Booking!</h1>
+          <p class="lead">Your booking has been successfully confirmed.</p>
+          <hr class="my-4"/>
+          <p>Booking Reference: <strong t-esc="booking.id"/></p>
+          <p>Room: <strong t-esc="booking.room_id.name"/></p>
+          <p>Check-in: <strong t-esc="booking.check_in"/></p>
+          <p>Check-out: <strong t-esc="booking.check_out"/></p>
+
+          <!-- Show enabled payment methods (TC_011) -->
+          <div class="mt-4">
+            <h5 class="mb-3">Available Payment Methods</h5>
+            <t t-if="providers">
+              <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <t t-foreach="providers" t-as="p">
+                  <span class="badge bg-primary">
+                    <t t-esc="p.name"/>
+                  </span>
+                </t>
+              </div>
+            </t>
+            <t t-else="">
+              <p class="text-muted">No online payment methods are enabled yet.</p>
+            </t>
+          </div>
+
+          <a href="/" class="btn btn-primary mt-4">Back to Home</a>
+        </div>
+      </div>
+    </t>
+  </template>
+</odoo>

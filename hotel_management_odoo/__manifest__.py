@@ -4,7 +4,7 @@
     'category': 'Services',
     'summary': """Hotel Management, Odoo Hotel Management, Hotel, Room Booking odoo, Amenities Odoo, Event management, Rooms, Events, Food, Booking, Odoo Hotel""",
     'description': """The module helps you to manage rooms, amenities, services, food, events and vehicles. End Users can book rooms and reserve foods from hotel.""",
-    'depends': ['account', 'event', 'fleet', 'lunch'],
+    'depends': ['account', 'event', 'fleet', 'lunch', 'website', 'portal', 'website_sale'],
     'data': [
         'security/hotel_management_odoo_groups.xml',
         'security/hotel_management_odoo_security.xml',
