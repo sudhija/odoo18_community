@@ -1,11 +1,6 @@
-# odoo_hotel_cart_integration.py
-# Controller + Model extensions for hotel bookings into Odoo website cart
-# Drop-in ready
-
 import logging
 import re
 from datetime import datetime, timedelta, date
-
 from odoo import http, fields, models, _
 from odoo.http import request
 
@@ -23,7 +18,6 @@ def _get_partner_from_request(post):
         })
     return partner
 
-
 def _parse_date(dstr):
     if not dstr:
         return None
@@ -31,7 +25,6 @@ def _parse_date(dstr):
         return datetime.strptime(dstr, '%Y-%m-%d').date()
     except Exception:
         return None
-
 
 def _dates_overlap(line_checkin_dt, line_checkout_dt, req_checkin_d, req_checkout_d):
     # Convert datetimes to dates for comparison
@@ -45,7 +38,6 @@ def _dates_overlap(line_checkin_dt, line_checkout_dt, req_checkin_d, req_checkou
         line_checkout_d = line_checkout_dt
     return (line_checkin_d <= req_checkout_d) and (line_checkout_d >= req_checkin_d)
 
-
 def _is_room_available(room, checkin_d: date, checkout_d: date, guests=1):
     # Consider bookings in reserved/check_in as blocking
     Line = request.env['room.booking.line'].sudo()
@@ -56,12 +48,10 @@ def _is_room_available(room, checkin_d: date, checkout_d: date, guests=1):
     for l in lines:
         if _dates_overlap(l.checkin_date, l.checkout_date, checkin_d, checkout_d):
             return False
-    # Basic capacity check if model provides it
     max_allowed = getattr(room, 'max_allowed_person', None) or getattr(room, 'max_guests', None)
     if max_allowed and guests and guests > max_allowed:
         return False
     return True
-
 
 def _get_rate_for_dates(room, checkin_d: date, checkout_d: date):
     # Try room-specific pricing if present, else fallback to list_price
@@ -87,65 +77,6 @@ def _get_rate_for_dates(room, checkin_d: date, checkout_d: date):
         except Exception:
             base = 0.0
     return base or 0.0
-
-
-# --------------------------
-# Models
-# --------------------------
-class SaleOrderLine(models.Model):
-    _inherit = 'sale.order.line'
-
-    room_id = fields.Many2one('hotel.room', string='Room')
-    checkin = fields.Date('Check-in')
-    checkout = fields.Date('Check-out')
-    guests = fields.Integer('Guests')
-    special_requests = fields.Text('Special Requests')
-
-
-class SaleOrder(models.Model):
-    _inherit = 'sale.order'
-
-    def action_confirm(self):
-        res = super(SaleOrder, self).action_confirm()
-        for order in self:
-            # Create a room.booking per order if any room lines exist
-            room_lines = order.order_line.filtered(lambda l: l.room_id and l.checkin and l.checkout)
-            if not room_lines:
-                continue
-            try:
-                # Derive a single booking using min checkin and max checkout
-                checkins = [l.checkin for l in room_lines]
-                checkouts = [l.checkout for l in room_lines]
-                checkin_date = min(checkins)
-                checkout_date = max(checkouts)
-
-                booking_vals = {
-                    'partner_id': order.partner_id.id,
-                    'checkin_date': fields.Datetime.to_datetime(str(checkin_date)),
-                    'checkout_date': fields.Datetime.to_datetime(str(checkout_date)),
-                    'need_food': False,
-                    'need_service': False,
-                    'need_fleet': False,
-                    'need_event': False,
-                }
-                booking = self.env['room.booking'].sudo().create(booking_vals)
-
-                # Create booking lines
-                for line in room_lines:
-                    nights = max(1, (line.checkout - line.checkin).days)
-                    self.env['room.booking.line'].sudo().create({
-                        'booking_id': booking.id,
-                        'room_id': line.room_id.id,
-                        'checkin_date': fields.Datetime.to_datetime(str(line.checkin)),
-                        'checkout_date': fields.Datetime.to_datetime(str(line.checkout)),
-                        'uom_qty': nights,
-                    })
-                # Optionally reserve immediately
-                # booking.action_reserve()
-            except Exception as e:
-                _logger.exception('Failed to create room.booking for SO %s: %s', order.id, e)
-        return res
-
 
 # --------------------------
 # Controller
@@ -203,11 +134,13 @@ class WebsiteIsmHotel(http.Controller):
             'product': product,
         })
 
-    @http.route(['/hotel/room/<int:room_id>/book'], type='http', auth='public',
-                website=True, methods=['GET', 'POST'], csrf=True)
+
+    @http.route(['/hotel/room/<int:room_id>/book'], type='http', auth='public', website=True, methods=['GET', 'POST'], csrf=True)
     def hotel_booking_checkout(self, room_id, **post):
+        """
+        Streamlined: Only add-to-cart flow, improved error handling, and session management.
+        """
         errors = {}
-        direct = request.params.get('direct') == '1'  # direct payment path
         room = request.env['hotel.room'].sudo().browse(room_id)
         if not room.exists():
             return request.not_found()
@@ -219,10 +152,8 @@ class WebsiteIsmHotel(http.Controller):
             checkin_date = _parse_date(checkin)
             checkout_date = _parse_date(checkout)
             nights = max(1, (checkout_date - checkin_date).days)
-
             rate = _get_rate_for_dates(room, checkin_date, checkout_date)
             subtotal = nights * (rate or 0.0)
-
             base_ctx = {
                 'room': room,
                 'checkin': checkin,
@@ -245,105 +176,56 @@ class WebsiteIsmHotel(http.Controller):
                 base_ctx.update(ctx_extra)
             return request.render('hotel_website_integration.website_hotel_booking_checkout', base_ctx)
 
-        # POST
         if request.httprequest.method == 'POST':
-            if not post.get('name') or len(post.get('name').strip()) < 2:
-                errors['name'] = _('Please enter a valid full name.')
-            email = post.get('email', '').strip()
-            if not email or not re.match(r"^[^@]+@[^@]+\.[^@]+$", email):
-                errors['email'] = _('Please enter a valid email address.')
-            phone = post.get('phone', '').strip()
-            if not phone.isdigit() or len(phone) < 7:
-                errors['phone'] = _('Please enter a valid phone number.')
-
-            partner = _get_partner_from_request(post)
-            checkin = _parse_date(post.get('checkin'))
-            checkout = _parse_date(post.get('checkout'))
-
-            if not checkin or not checkout:
-                errors['date'] = _('Invalid date format.')
-            today = fields.Date.context_today(request.env.user)
-            if checkin and checkin < today:
-                errors['checkin'] = _('Past dates are not allowed.')
-            if checkin and checkout and checkout <= checkin:
-                errors['checkout'] = _('Check-out must be after check-in.')
-
-            guests = int(post.get('guests') or 2)
-            if not _is_room_available(room, checkin, checkout, guests=guests):
-                errors['availability'] = _('Room not available for selected dates.')
-
-            if errors:
-                return _render_checkout({'errors': errors})
-
-            # pricing
-            nights = max(1, (checkout - checkin).days)
-            rate = _get_rate_for_dates(room, checkin, checkout)
-            subtotal = nights * (rate or 0.0)
-
-            if direct:
-                # Only create payment transaction and store intent; do not create booking yet
+            # Improved error handling and user feedback
+            try:
+                if not post.get('name') or len(post.get('name').strip()) < 2:
+                    errors['name'] = _('Please enter a valid full name.')
+                phone = post.get('phone', '').strip()
+                if not phone.isdigit() or len(phone) < 7:
+                    errors['phone'] = _('Please enter a valid phone number.')
+                partner = _get_partner_from_request(post)
+                checkin = _parse_date(post.get('checkin'))
+                checkout = _parse_date(post.get('checkout'))
+                if not checkin or not checkout:
+                    errors['date'] = _('Invalid date format.')
+                today = fields.Date.context_today(request.env.user)
+                if checkin and checkin < today:
+                    errors['checkin'] = _('Past dates are not allowed.')
+                if checkin and checkout and checkout <= checkin:
+                    errors['checkout'] = _('Check-out must be after check-in.')
+                guests = int(post.get('guests') or 2)
+                if not _is_room_available(room, checkin, checkout, guests=guests):
+                    errors['availability'] = _('Room not available for selected dates.')
+                if errors:
+                    _logger.info('Hotel checkout validation errors for room %s: %s', room.id, errors)
+                    return _render_checkout({'errors': errors})
+                nights = max(1, (checkout - checkin).days)
+                rate = _get_rate_for_dates(room, checkin, checkout)
                 subtotal = nights * (rate or 0.0)
-                try:
-                    provider = request.env['payment.provider'].sudo().search([
-                        ('state', 'in', ['enabled', 'test']),
-                        ('code', '=', 'demo')
-                    ], limit=1)
-                    if not provider:
-                        provider = request.env['payment.provider'].sudo().search([
-                            ('state', 'in', ['enabled', 'test'])
-                        ], limit=1)
-                    if not provider:
-                        return _render_checkout({'errors': {'payment': _('No payment provider enabled')}})
-
-                    currency = request.env.company.currency_id
-                    reference = request.env['payment.transaction']._generate_reference('hotel_booking')
-                    tx = request.env['payment.transaction'].sudo().create({
-                        'amount': subtotal,
-                        'currency_id': currency.id,
-                        'partner_id': partner.id,
-                        'provider_id': provider.id,
-                        'reference': reference,
-                        'state': 'draft',
-                    })
-
-                    # Store intent
-                    request.env['hotel.booking.intent'].sudo().create({
-                        'reference': reference,
-                        'partner_id': partner.id,
-                        'room_id': room.id,
-                        'checkin_date': checkin,
-                        'checkout_date': checkout,
-                        'guests': guests,
-                        'nights': nights,
-                        'rate': rate,
-                        'amount_total': subtotal,
-                        'special_requests': post.get('special_requests'),
-                    })
-
-                    checkout_url = tx.get_checkout_url()
-                    if checkout_url:
-                        return request.redirect(checkout_url)
-                    return request.redirect('/payment/process?reference=%s' % tx.reference)
-                except Exception as e:
-                    _logger.exception('Direct payment initiation failed: %s', e)
-                    return _render_checkout({'errors': {'payment': _('Payment initialization failed')}})
-            else:
-                # Add to shop cart and proceed with regular checkout
                 order = request.website.sale_get_order(force_create=True)
+                if not order:
+                    _logger.error('Could not create or fetch sale order for booking.')
+                    return _render_checkout({'errors': {'cart': _('Could not create a shopping cart. Please try again later.')}})
                 if order and partner:
                     order.sudo().write({'partner_id': partner.id})
-
-                # Clear previous cart lines to avoid duplicates and pricing confusion
+                # Remove previous cart lines for a clean booking
                 if order and order.order_line:
-                    order.order_line.sudo().unlink()
-
-                subtotal = nights * (rate or 0.0)
-
+                    for line in order.order_line:
+                        line.sudo().unlink()
+                product_variant = getattr(room, 'product_id', None)
+                if product_variant and getattr(product_variant, '_name', '') == 'product.template':
+                    pv = product_variant.product_variant_ids[:1]
+                    product_variant = pv and pv[0] or None
+                if not product_variant or getattr(product_variant, '_name', '') != 'product.product':
+                    _logger.error('Room product is not configured for website sale: room_id=%s', room.id)
+                    return _render_checkout({'errors': {'cart': _('Room product is not configured for website sale.')}})
                 sol_vals = {
                     'order_id': order.id,
-                    'product_id': (room.product_id.id if getattr(room, 'product_id', None) else False),
-                    'name': f"{(room.display_name or 'Room')} ({checkin} → {checkout})",
+                    'product_id': product_variant.id,
+                    'name': f"{room.name} ({checkin} → {checkout})",
                     'product_uom_qty': 1,
+                    'product_uom': (getattr(product_variant, 'uom_id', False) and getattr(product_variant.uom_id, 'id', False)) or request.env.ref('uom.product_uom_unit').id,
                     'price_unit': subtotal,
                     'room_id': room.id,
                     'checkin': checkin,
@@ -356,17 +238,42 @@ class WebsiteIsmHotel(http.Controller):
                         force_price=True,
                         skip_pricelist=True,
                         pricelist_browse=False,
+                        website_id=request.website.id,
                     ).sudo().create(sol_vals)
-                    # Re-force price in case onchange/pricelist logic adjusted it
-                    sol.sudo().write({'price_unit': subtotal})
+                    request.env['hotel.room'].fix_website_flags()#####
+                    sol.sudo().write({'price_unit': subtotal, 'product_uom_qty': 1})
+                    _logger.info('Created cart line for room booking: SOL %s', sol.id)
                 except Exception as e:
-                    _logger.exception('Failed to create sale.order.line for room cart: %s', e)
-                    return _render_checkout({'errors': {'cart': _('Could not add item to cart.')}})
-
-                return request.redirect('/shop/cart')
-
-        # GET = preview
+                    _logger.exception('Failed to create sale order line: %s', e)
+                    return _render_checkout({'errors': {'cart': _('Could not add item to cart. Please contact support if this persists.')}})
+                request.session['sale_order_id'] = order.id
+                request.session['sale_last_order_id'] = order.id
+                request.env['hotel.room'].fix_website_flags()#####
+                _logger.info('Set sale_order_id and sale_last_order_id in session: %s', order.id)
+                return request.redirect('/shop/checkout')
+            except Exception as e:
+                import traceback
+                _logger.exception('Unexpected error in hotel booking checkout: %s', e)
+                return _render_checkout({'errors': {'cart': _('An unexpected error occurred. Please try again or contact support.')}})
         return _render_checkout()
+
+    @http.route(['/hotel/reservation/confirm/<int:reservation_id>'], type='http', auth='user', website=True)
+    def hotel_reservation_confirm(self, reservation_id, **kw):
+        reservation = request.env['hotel.reservation'].sudo().browse(reservation_id)
+        if not reservation.exists() or reservation.partner_id.id != request.env.user.partner_id.id:
+            return request.not_found()
+        return request.render('hotel_website_integration.website_hotel_booking_thanks', {'reservation': reservation})
+
+    @http.route(['/hotel/reservation/status/<string:reference>'], type='http', auth='public', website=True)
+    def hotel_reservation_status(self, reference, **kw):
+        reservation = request.env['hotel.reservation'].sudo().search([('name', '=', reference)], limit=1)
+        if not reservation:
+            return request.render('hotel_website_integration.website_hotel_payment_failed', {'error': 'Reservation not found.'})
+        return request.render('hotel_website_integration.website_hotel_booking_thanks', {'reservation': reservation})
+
+    @http.route(['/hotel/reservation/error'], type='http', auth='public', website=True)
+    def hotel_reservation_error(self, **kw):
+        return request.render('hotel_website_integration.website_hotel_payment_failed', {'error': 'There was a problem with your booking. Please try again or contact support.'})
 
     def _create_payment_transaction(self, room, partner, checkin, checkout, guests, rate, nights, special_requests):
         """Create payment transaction and redirect to payment provider"""
@@ -396,15 +303,57 @@ class WebsiteIsmHotel(http.Controller):
                 'state': 'draft',
             })
 
-            checkout_url = tx.get_checkout_url()
-            if checkout_url:
-                _logger.info('Redirecting to payment checkout: %s', checkout_url)
-                return request.redirect(checkout_url)
-            return request.redirect('/payment/process?reference=%s' % tx.reference)
+            # Create a draft booking to link with payment
+            try:
+                Book = request.env['room.booking'].sudo()
+                booking_vals = {
+                    'partner_id': partner.id,
+                    'checkin_date': fields.Datetime.to_datetime(str(checkin)),
+                    'checkout_date': fields.Datetime.to_datetime(str(checkout)),
+                    'need_food': False,
+                    'need_service': False,
+                    'need_fleet': False,
+                    'need_event': False,
+                }
+                booking = Book.create(booking_vals)
+                
+                # Create booking line
+                request.env['room.booking.line'].sudo().create({
+                    'booking_id': booking.id,
+                    'room_id': room.id,
+                    'checkin_date': fields.Datetime.to_datetime(str(checkin)),
+                    'checkout_date': fields.Datetime.to_datetime(str(checkout)),
+                    'uom_qty': nights,
+                })
+                
+                _logger.info('Created draft booking %s for payment transaction %s', booking.id, reference)
+            except Exception as e:
+                _logger.warning('Could not create draft booking: %s', e)
+
+            # Get checkout URL from provider
+            try:
+                checkout_url = tx.get_checkout_url()
+                if checkout_url:
+                    _logger.info('Redirecting to payment checkout: %s', checkout_url)
+                    return request.redirect(checkout_url)
+            except Exception as e:
+                _logger.warning('Could not get checkout URL: %s', e)
+            
+            # Fallback to manual payment form
+            return request.render('hotel_website_integration.website_hotel_payment_form', {
+                'tx': tx,
+                'room': room,
+                'checkin': checkin,
+                'checkout': checkout,
+                'guests': guests,
+                'nights': nights,
+                'subtotal': subtotal,
+                'provider': provider,
+            })
 
         except Exception as e:
             _logger.exception('Failed to create payment transaction: %s', e)
-            return request.redirect('/hotel/payment/providers')
+            return request.redirect('/shop/checkout')
 
     @http.route(['/hotel/payment/confirm/<string:reference>'], type='http', auth='public', website=True)
     def payment_confirm(self, reference, **post):
@@ -414,42 +363,61 @@ class WebsiteIsmHotel(http.Controller):
             return request.not_found()
 
         if tx.state == 'done':
-            # Payment successful - create booking from stored intent
-            intent = request.env['hotel.booking.intent'].sudo().search([('reference', '=', reference)], limit=1)
-            if intent:
-                try:
-                    booking = request.env['room.booking'].sudo().create({
-                        'partner_id': intent.partner_id.id,
-                        'checkin_date': fields.Datetime.to_datetime(str(intent.checkin_date)),
-                        'checkout_date': fields.Datetime.to_datetime(str(intent.checkout_date)),
-                    })
-                    request.env['room.booking.line'].sudo().create({
-                        'booking_id': booking.id,
-                        'room_id': intent.room_id.id,
-                        'checkin_date': fields.Datetime.to_datetime(str(intent.checkin_date)),
-                        'checkout_date': fields.Datetime.to_datetime(str(intent.checkout_date)),
-                        'uom_qty': intent.nights,
-                    })
-                    intent.sudo().unlink()
-                    return request.render('hotel_website_integration.website_hotel_payment_success', {
-                        'tx': tx,
-                        'booking': booking,
-                    })
-                except Exception as e:
-                    _logger.exception('Failed to create booking from intent: %s', e)
-                    return request.render('hotel_website_integration.website_hotel_payment_failed', {
-                        'tx': tx,
-                        'error': 'Booking creation failed after payment'
-                    })
-            # No intent found; fallback
-            return request.render('hotel_website_integration.website_hotel_payment_success', {
-                'tx': tx,
-            })
+            return self._create_booking_from_transaction(tx)
         else:
             # Payment failed
             return request.render('hotel_website_integration.website_hotel_payment_failed', {
                 'tx': tx,
                 'error': 'Payment was not successful'
+            })
+
+    def _create_booking_from_transaction(self, tx):
+        """Create hotel booking from successful payment transaction"""
+        try:
+            # Look for existing booking with this transaction reference
+            Book = request.env['room.booking'].sudo()
+            existing_booking = Book.search([('payment_reference', '=', tx.reference)], limit=1)
+            
+            if existing_booking:
+                # Update existing booking with payment info
+                existing_booking.sudo().write({
+                    'payment_transaction_id': tx.id,
+                    'payment_status': 'paid',
+                    'payment_provider_id': tx.provider_id.id,
+                    'state': 'reserved',
+                })
+                booking = existing_booking
+            else:
+                # Create new booking from transaction
+                booking_vals = {
+                    'partner_id': tx.partner_id.id,
+                    'name': f'Payment Booking - {tx.reference}',
+                    'rate': tx.amount,
+                    'state': 'reserved',
+                    'email': tx.partner_id.email,
+                    'phone': tx.partner_id.phone,
+                    'payment_transaction_id': tx.id,
+                    'payment_status': 'paid',
+                    'payment_reference': tx.reference,
+                    'payment_provider_id': tx.provider_id.id,
+                }
+                
+                booking = Book.create(booking_vals)
+                try:
+                    booking.sudo().action_reserve()
+                except Exception as e:
+                    _logger.warning('Could not confirm booking: %s', e)
+            
+            return request.render('hotel_website_integration.website_hotel_payment_success', {
+                'tx': tx,
+                'booking': booking,
+            })
+            
+        except Exception as e:
+            _logger.exception('Failed to create booking from transaction: %s', e)
+            return request.render('hotel_website_integration.website_hotel_payment_failed', {
+                'tx': tx,
+                'error': 'Booking creation failed'
             })
 
     @http.route(['/hotel/payment/providers'], type='http', auth='public', website=True)

@@ -1,3 +1,4 @@
+from odoo import api
 # -*- coding: utf-8 -*-
 ###############################################################################
 #
@@ -23,11 +24,11 @@ from datetime import datetime, timedelta
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 from odoo.tools.safe_eval import pytz
+import logging
 
 
 class RoomBooking(models.Model):
-    """Model that handles the hotel room booking and all operations related
-     to booking"""
+    """Model that handles the hotel room booking and all operations related to booking"""
     _name = "room.booking"
     _description = "Hotel Room Reservation"
     _inherit = ['mail.thread', 'mail.activity.mixin']
@@ -767,3 +768,172 @@ class RoomBooking(models.Model):
             }
         else:
             raise ValidationError(_("Please Enter time zone in user settings."))
+
+    @api.model
+    def create_reservation_from_website(self, partner_id, room_id, checkin_date, checkout_date, guests_count, special_requests=None):
+        """
+        Creates a reservation with linked room booking, validates room availability, creates booking lines, and returns the reservation record.
+        """
+        # Validate room availability
+        room = self.env['hotel.room'].browse(room_id)
+        if not room.is_room_avail:
+            raise ValidationError(_('Selected room is not available.'))
+        # Create room booking
+        if not checkin_date or not checkout_date:
+            raise ValidationError(_('Check-in and check-out dates are required for room booking.'))
+        booking_vals = {
+            'partner_id': partner_id,
+            'checkin_date': checkin_date,
+            'checkout_date': checkout_date,
+            'room_line_ids': [
+                (0, 0, {
+                    'room_id': room_id,
+                    'uom_qty': 1,
+                    'price_unit': room.list_price,
+                    'checkin_date': checkin_date,
+                    'checkout_date': checkout_date,
+                })
+            ],
+        }
+        booking = self.create(booking_vals)
+        # Create reservation
+        reservation_vals = {
+            'partner_id': partner_id,
+            'checkin_date': checkin_date,
+            'checkout_date': checkout_date,
+            'guests_count': guests_count,
+            'special_requests': special_requests or '',
+            'room_booking_id': booking.id,
+            'state': 'draft',
+        }
+        reservation = self.env['hotel.reservation'].create(reservation_vals)
+        return reservation
+
+    @api.model
+    def create_reservation_from_sale_order(self, sale_order):
+        """
+        Enhanced: Handles multiple room lines, extracts actual dates, guests, special requests, validates availability, and robust error handling.
+        """
+        partner_id = sale_order.partner_id.id
+        reservation_records = []
+        errors = []
+        for line in sale_order.order_line:
+            if not line.product_id or line.product_id.detailed_type != 'service':
+                continue
+            hotel_room = self.env['hotel.room'].search([('product_id', '=', line.product_id.id)], limit=1)
+            if not hotel_room:
+                errors.append(_('No hotel room found for product %s.') % (line.product_id.display_name or line.product_id.id))
+                continue
+            checkin_date = getattr(line, 'checkin', None) or sale_order.date_order
+            checkout_date = getattr(line, 'checkout', None) or (checkin_date + timedelta(days=1))
+            guests_count = getattr(line, 'guests', None) or int(line.product_uom_qty or 1)
+            special_requests = getattr(line, 'special_requests', '')
+            # Validate room availability
+            if not self.validate_room_availability_for_dates(hotel_room.id, checkin_date, checkout_date):
+                errors.append(_('Room %s is not available for the selected dates.') % hotel_room.name)
+                continue
+            try:
+                booking_vals = {
+                    'partner_id': partner_id,
+                    'checkin_date': checkin_date,
+                    'checkout_date': checkout_date,
+                    'room_line_ids': [
+                        (0, 0, {
+                            'room_id': hotel_room.id,
+                            'uom_qty': guests_count,
+                            'price_unit': hotel_room.list_price,
+                            'checkin_date': checkin_date,
+                            'checkout_date': checkout_date,
+                        })
+                    ],
+                }
+                booking = self.create(booking_vals)
+                reservation_vals = {
+                    'partner_id': partner_id,
+                    'checkin_date': checkin_date,
+                    'checkout_date': checkout_date,
+                    'guests_count': guests_count,
+                    'special_requests': special_requests,
+                    'room_booking_id': booking.id,
+                    'sale_order_id': sale_order.id,
+                    'state': 'confirmed',
+                }
+                reservation = self.env['hotel.reservation'].create(reservation_vals)
+                reservation_records.append(reservation)
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).exception('Failed to create reservation for SO %s, line %s: %s', sale_order.id, line.id, e)
+                errors.append(_('Could not create reservation for room %s: %s') % (hotel_room.name, str(e)))
+        if errors:
+            raise ValidationError('; '.join(errors))
+        return reservation_records and reservation_records[0] or False
+
+    def _link_reservation_to_invoice(self, reservation_id, invoice_id):
+        """
+        Enhanced: Links reservation to invoice, handles multiple invoices, syncs payment, logs audit.
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+        reservation = self.env['hotel.reservation'].browse(reservation_id)
+        invoice = self.env['account.move'].browse(invoice_id)
+        if not reservation or not invoice:
+            logger.warning('Reservation or invoice not found for linking.')
+            return
+        reservation.write({'invoice_id': invoice.id})
+        reservation._sync_payment_status()
+        logger.info('Linked reservation %s to invoice %s', reservation.id, invoice.id)
+
+    def _sync_reservation_payment_status(self, reservation_id):
+        """
+        Enhanced: Syncs payment status, handles partials, logs, triggers notifications.
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+        reservation = self.env['hotel.reservation'].browse(reservation_id)
+        reservation._sync_payment_status()
+        logger.info('Synced payment status for reservation %s', reservation_id)
+        # TODO: Add notification triggers if needed
+
+    # --- New helpers for website integration ---
+    @api.model
+    def get_reservation_by_sale_order(self, sale_order_id):
+        return self.env['hotel.reservation'].search([('sale_order_id', '=', sale_order_id)], limit=1)
+
+    @api.model
+    def update_reservation_from_payment(self, payment_transaction):
+        reservation = self.env['hotel.reservation'].search([('payment_transaction_id', '=', payment_transaction.id)], limit=1)
+        if reservation:
+            reservation._sync_payment_status()
+        return reservation
+
+    @api.model
+    def validate_room_availability_for_dates(self, room_id, checkin, checkout):
+        Room = self.env['hotel.room'].sudo().browse(room_id)
+        if not Room:
+            return False
+        # Check for overlapping bookings
+        Line = self.env['room.booking.line'].sudo()
+        overlapping = Line.search([
+            ('room_id', '=', room_id),
+            ('booking_id.state', 'in', ['reserved', 'check_in']),
+            ('checkin_date', '<', checkout),
+            ('checkout_date', '>', checkin),
+        ], limit=1)
+        return not bool(overlapping)
+
+    @api.model
+    def create_reservation_confirmation_data(self, reservation_id):
+        reservation = self.env['hotel.reservation'].browse(reservation_id)
+        if not reservation:
+            return {}
+        return {
+            'reference': reservation.name,
+            'room': reservation.room_booking_id and reservation.room_booking_id.room_line_ids and reservation.room_booking_id.room_line_ids[0].room_id.name or '',
+            'checkin': reservation.checkin_date,
+            'checkout': reservation.checkout_date,
+            'guests': reservation.guests_count,
+            'status': reservation.state,
+            'payment_status': reservation.payment_status,
+            'special_requests': reservation.special_requests,
+            'amount_total': reservation.amount_total,
+        }

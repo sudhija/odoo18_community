@@ -1,0 +1,47 @@
+<odoo>
+  <record id="view_restaurant_table_dashboard" model="ir.ui.view">
+    <field name="name">restaurant.table.dashboard</field>
+    <field name="model">restaurant.table</field>
+    <field name="arch" type="xml">
+      <kanban class="o_kanban_mobile">
+        <field name="reservation_status"/>
+        <field name="last_reservation_end"/>
+        <field name="rate"/>
+        <templates>
+          <t t-name="kanban-box">
+            <div t-attf-class="oe_kanban_global_click card text-white m-2 p-3
+              #{record.reservation_status.raw_value == 'occupied' and ' bg-danger' or ''}
+              #{record.reservation_status.raw_value == 'future' and ' bg-warning' or ''}
+              #{record.reservation_status.raw_value == 'free' and ' bg-success' or ''}">
+              
+              <strong><field name="name"/></strong>
+              <div>Rate: <field name="rate"/></div>
+              <div>
+                Status: 
+                <t t-if="record.reservation_status.raw_value">
+                  <t t-esc="record.reservation_status.raw_value"/>
+                </t>
+                <t t-else="">Unknown</t>
+              </div>
+              <div t-if="record.last_reservation_end and record.last_reservation_end.value">
+                Reserved until: <t t-esc="record.last_reservation_end.value"/>
+              </div>
+            </div>
+          </t>
+        </templates>
+      </kanban>
+    </field>
+  </record>
+
+  <record id="restaurant_table_dashboard_action" model="ir.actions.act_window">
+    <field name="name">Table Dashboard</field>
+    <field name="res_model">restaurant.table</field>
+    <field name="view_mode">kanban,tree,form</field>
+    <field name="view_id" ref="view_restaurant_table_dashboard"/>
+  </record>
+
+  <menuitem id="restaurant_table_dashboard_menu"
+            name="Table Dashboard"
+            parent="point_of_sale.menu_point_root"
+            action="restaurant_table_dashboard_action"/>
+</odoo>

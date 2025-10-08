@@ -1,0 +1,318 @@
+<odoo>
+<!-- Updated Template for Time and Slots -->
+<template id="table_reservation" name="Table Reservation">
+    <t t-call="website.layout">
+        <div id="wrap" class="oe_structure oe_empty">
+            <div class="container">
+                <form action="/restaurant/floors" method="post" enctype="multipart/form-data" class="o_mark_required" data-mark="*">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <center>
+                        <br/><br/>
+                        <h1><b>Table Reservation</b></h1>
+                        <br/>
+                        <t t-if="opening_hour and closing_hour">
+                            <h4>
+                                Opening Hours:
+                                <t t-esc="opening_hour"/> - <t t-esc="closing_hour"/>
+                            </h4>
+                        </t>
+                        <br/>
+                        <div class="form-group row" style="width:70%;padding-left:15%;">
+                            <label for="date" class="col-2 col-form-label">Date </label>
+                            <div class="col-4">
+                                <input type="date" name="date" class="form-control" id="date" required="1"/>
+                            </div>
+                        </div>
+                        <br/>
+                    </center>
+
+                    <!-- Time Selection -->
+                    <center>
+                        <div class="row" style="padding-left:32%;width:85%;">
+                            <div class="col-2">
+                                <strong>Slots:</strong>
+                            </div>
+
+        <!-- Start Time -->
+        <div class="col-3">
+            <label for="start_time">Start Time</label>
+            <select id="start_time" name="start_time" class="form-control s_website_form_input" required="1">
+                <option value="" disabled="disabled" selected="selected">Select Start Time</option>
+                <t t-if="opening_minutes and closing_minutes">
+                    <t t-foreach="range(opening_minutes, closing_minutes + 1, 30)" t-as="minutes">
+                        <t t-set="hour" t-value="int(minutes/60)"/>
+                        <t t-set="minute" t-value="minutes % 60"/>
+                        <t t-set="hour12" t-value="(hour - 1) % 12 + 1"/>
+                        <t t-set="ampm" t-value="'AM' if hour &lt; 12 else 'PM'"/>
+
+                        <t t-set="time_label" 
+   t-value="str(hour12).zfill(2) + ':' + str(minute).zfill(2) + ' ' + ampm"/>
+
+                        <option t-att-value="time_label"><t t-esc="time_label"/></option>
+                    </t>
+                </t>
+            </select>
+        </div>
+
+        <!-- End Time -->
+        <div class="col-3">
+            <label for="end_time">End Time</label>
+            <select id="end_time" name="end_time" class="form-control s_website_form_input" required="1">
+                <option value="" disabled="disabled" selected="selected">Select End Time</option>
+                <t t-if="opening_minutes and closing_minutes">
+                    <t t-foreach="range(opening_minutes + 30, closing_minutes + 1, 30)" t-as="minutes">
+                        <t t-set="hour" t-value="int(minutes/60)"/>
+                        <t t-set="minute" t-value="minutes % 60"/>
+                        <t t-set="hour12" t-value="(hour - 1) % 12 + 1"/>
+                        <t t-set="ampm" t-value="'AM' if hour &lt; 12 else 'PM'"/>
+
+                        <t t-set="time_label" 
+   t-value="str(hour12).zfill(2) + ':' + str(minute).zfill(2) + ' ' + ampm"/>
+
+                        <option t-att-value="time_label"><t t-esc="time_label"/></option>
+                    </t>
+                </t>
+            </select>
+        </div>
+
+                        </div>
+                    </center>
+
+                    <!-- Modals for Alerts -->
+                    <t t-set="modals">
+                        <div class="modal" tabindex="-1" id="alert_modal">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Invalid Date</h5>
+                                    </div>
+                                    <hr class="m-0"/>
+                                    <div class="modal-body">
+                                        <p>Please select a valid date.</p>
+                                    </div>
+                                    <hr class="m-0"/>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary close_btn_alert_modal" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal" tabindex="-1" id="time_alert_modal">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Invalid Time</h5>
+                                    </div>
+                                    <hr class="m-0"/>
+                                    <div class="modal-body">
+                                        <p>Please select a valid booking start and end time.</p>
+                                    </div>
+                                    <hr class="m-0"/>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary close_btn_time_alert_modal" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal" tabindex="-1" id="open_hours_alert_modal">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Invalid Time</h5>
+                                    </div>
+                                    <hr class="m-0"/>
+                                    <div class="modal-body">
+                                        <p>Select a time between the opening and closing hours.</p>
+                                    </div>
+                                    <hr class="m-0"/>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary close_btn_time_alert_modal" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Submit Button -->
+                    <br/>
+                    <div class="row" data-name="Submit Button">
+                        <div class="col-sm-2" style="padding-left:45%;">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </t>
+</template>
+
+
+
+<!--   Template for floors   -->
+<template id="restaurant_floors" name="Admission Submit">
+    <t t-call="website.layout">
+        <div id="wrap" class="oe_structure oe_empty">
+            <div class="container swa_container">
+                <br/>
+                <br/>
+                <form action="/booking/confirm" method="POST" enctype="multipart/form-data" class="oe_import">
+                    <div class="row">
+                        <div class="col-2">
+                            <span>Select Your Floor</span>
+                        </div>
+                        <div class="col-2" id="restaurant_floors">
+                            <select name="floors" id="floors_rest" class="form-control">
+                                <option value="0">Select a Floor</option>
+                                <t t-foreach="floors" t-as="floor">
+                                    <option t-att-value="floor.id">
+                                        <t t-esc="floor.name"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+                    </div>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <div id="info" style="display: none;">
+                        <div id="tableContainer" style="width:100%;display:flex;">
+                            <div class="row" id="table_container_row"/>
+                            <div class="card" style="background-color:#c8e0e0;width:1000px;height:370px;border:0;">
+                                <div class="card-body" style="border:1px;">
+                                    <h5 class="card-title" style="Font-size:45px;">Booking Info </h5>
+                                    <table style="border:0;">
+                                        <tr>
+                                            <td>Date:</td>
+                                            <td style="text-align:right;" id="date_booking">
+                                                <t t-esc="date"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Start Time:</td>
+                                            <td style="text-align:right;" id="booking_start">
+                                                <t t-esc="start_time"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>End Time:</td>
+                                            <td style="text-align:right;" id="booking_end">
+                                                <t t-esc="end_time"/>
+                                            </td>
+                                        </tr>
+                                        <t t-if="payment == 'True'">
+                                            <tr>
+                                                <td><b>Booking Amount For <span id="count_table"> 0 </span> Tables</b></td>
+                                                <td style="text-align:right;">
+                                                    <span id="total_amount"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <t t-else="">
+                                            <tr style="display:none;">
+                                                <td><b>Booking Amount For <span id="count_table"> 0 </span> Tables</b></td>
+                                                <td style="text-align:right;">
+                                                    <span id="total_amount"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </table>
+                                    <span hidden="hidden">
+                                        <input name="date" id="date_id" class="form-control border-0 p-0" type="text" t-att-value="date"/>
+                                        <input name="start_time" id="start_id" class="form-control border-0 p-0" type="text" t-att-value="start_time"/>
+                                        <input name="end_time" id="end_id" class="form-control border-0 p-0" type="text" t-att-value="end_time"/>
+                                        <input name="tables" id="tables_input" class="form-control border-0 p-0" type="text"/>
+                                    </span>
+
+                                    <!-- ✅ Updated Confirm/Login logic -->
+                                    <t t-if="not request.env.user._is_public()">
+                                        <!-- Logged-in user → normal booking confirm -->
+                                        <button type="submit" id="booking_confirm_btn"
+                                                disabled="disabled"
+                                                class="btn btn-primary submit_button">
+                                            Booking Confirm
+                                        </button>
+                                    </t>
+                                    <t t-else="">
+                                        <!-- Guest user → redirect to login with redirect back to confirm -->
+                                        <a t-att-href="'/web/login?redirect=/booking/confirm?date={}&amp;start_time={}&amp;end_time={}'.format(date, start_time, end_time)"
+   class="btn btn-primary">
+    Login to Confirm Booking
+</a>
+
+                                    </t>
+                                </div>
+                                <div style="line-height:1px;background: #ffffff;border:0;"/>
+                                <t t-if="payment">
+                                    <div style="background: #ffffff;border:0;color:#FF0000;">
+                                        <t t-esc="refund"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                </form>
+            </div>
+        </div>
+    </t>
+</template>
+
+
+<template id="reservation_success_page" name="Reservation Success Page">
+    <t t-call="website.layout">
+        <div class="container mt-5 mb-5">
+            <h2 class="text-success mb-3">Your Reservation is Confirmed!</h2>
+            <p>Dear <strong><t t-esc="request.env.user.name"/></strong>,</p>
+            <p>
+                Your reservation has been successfully confirmed for
+                <strong><t t-esc="reservation.date"/></strong> from
+                <strong><t t-esc="reservation.starting_at"/></strong> to
+                <strong><t t-esc="reservation.ending_at"/></strong>.
+            </p>
+            <p>
+                Reserved tables:
+                <t t-foreach="tables" t-as="table">
+                    <span class="badge bg-primary m-1"><t t-esc="table.name"/></span>
+                </t>
+            </p>
+            <p class="mt-3">Thank you for choosing <strong><t t-esc="company.name"/></strong>!</p>
+            <a href="/" class="btn btn-primary mt-4">Go to Home</a>
+        </div>
+    </t>
+</template>
+
+<template id="reservation_review_page" name="Reservation Review">
+    <t t-call="website.layout">
+        <div class="container">
+            <h2>Review Your Booking</h2>
+            <p>Date: <t t-esc="date"/></p>
+            <p>Start Time: <t t-esc="start_time"/></p>
+            <p>End Time: <t t-esc="end_time"/></p>
+            <p>Selected Tables: <t t-esc="tables"/></p>
+            <p>Floor: <t t-esc="floors"/></p>
+
+            <form action="/booking/confirm" method="POST">
+    <input type="hidden" name="date" t-att-value="date"/>
+    <input type="hidden" name="start_time" t-att-value="start_time"/>
+    <input type="hidden" name="end_time" t-att-value="end_time"/>
+    <input type="hidden" name="tables" t-att-value="tables"/>
+    <input type="hidden" name="floors" t-att-value="floors"/>
+
+    <p><b>Date:</b> <t t-esc="date"/></p>
+    <p><b>Start Time:</b> <t t-esc="start_time"/></p>
+    <p><b>End Time:</b> <t t-esc="end_time"/></p>
+    <p><b>Selected Tables:</b> <t t-esc="tables"/></p>
+    <p><b>Floor:</b> <t t-esc="floors"/></p>
+
+    <button type="submit" class="btn btn-primary">Confirm Booking</button>
+</form>
+
+        </div>
+    </t>
+</template>
+
+
+
+</odoo>

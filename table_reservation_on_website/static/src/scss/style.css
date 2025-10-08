@@ -1,0 +1,56 @@
+.page-overlay {
+    min-height: 100vh;
+    background: url('/pos_table_reservation_extend/static/src/img/restaurant_bg.jpg') no-repeat center center / cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.table-reservation-card {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 450px;
+}
+
+.table-reservation-card h1 {
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.opening-hours {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.table-reservation-card label {
+    margin-top: 0.5rem;
+    font-weight: bold;
+    display: block;
+}
+
+.table-reservation-card .form-control,
+.table-reservation-card select {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.btn-submit {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-submit:hover {
+    background-color: #0056b3;
+}

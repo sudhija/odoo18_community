@@ -31,6 +31,7 @@ from . import hotel_amenity
 from . import hotel_floor
 from . import hotel_room
 from . import hotel_service
+from . import hotel_reservation
 from . import maintenance_request
 from . import maintenance_team
 from . import room_booking

@@ -1,0 +1,5 @@
+{
+    "workbench.editor.autoLockGroups": {
+        "jupyter-notebook": true
+    }
+}

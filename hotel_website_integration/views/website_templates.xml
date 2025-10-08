@@ -39,11 +39,8 @@
                     </div>
                   </div>
 
-                  <!-- Direct Pay -->
-                  <button type="submit" name="direct" value="1" class="btn btn-primary">Book &amp; Pay Now</button>
-
-                  <!-- Add to Cart -->
-                  <button type="submit" class="btn btn-outline-secondary">Add to Cart</button>
+                  <!-- Add to Cart Only -->
+                  <button type="submit" class="btn btn-primary">Book Now &amp; Checkout</button>
 
                 </form>
               </div>
@@ -82,30 +79,17 @@
       <div class="container my-5">
         <div class="card shadow-lg rounded-3 p-5 text-center">
           <h1 class="text-success mb-3">Thank You for Your Booking!</h1>
-          <p class="lead">Your booking has been successfully confirmed.</p>
+          <p class="lead">Your reservation has been successfully confirmed.</p>
           <hr class="my-4"/>
-          <p>Booking Reference: <strong t-esc="booking.id"/></p>
-          <p>Room: <strong t-esc="booking.room_id.name"/></p>
-          <p>Check-in: <strong t-esc="booking.check_in"/></p>
-          <p>Check-out: <strong t-esc="booking.check_out"/></p>
-
-          <!-- Show enabled payment methods (TC_011) -->
-          <div class="mt-4">
-            <h5 class="mb-3">Available Payment Methods</h5>
-            <t t-if="providers">
-              <div class="d-flex flex-wrap gap-2 justify-content-center">
-                <t t-foreach="providers" t-as="p">
-                  <span class="badge bg-primary">
-                    <t t-esc="p.name"/>
-                  </span>
-                </t>
-              </div>
-            </t>
-            <t t-else="">
-              <p class="text-muted">No online payment methods are enabled yet.</p>
-            </t>
-          </div>
-
+          <t t-if="reservation">
+            <p>Reservation Reference: <strong t-esc="reservation.name"/></p>
+            <p>Room Booking: <strong t-esc="reservation.room_booking_id.name"/></p>
+            <p>Check-in: <strong t-esc="reservation.checkin_date"/></p>
+            <p>Check-out: <strong t-esc="reservation.checkout_date"/></p>
+            <p>Guests: <strong t-esc="reservation.guests_count"/></p>
+            <p>Status: <strong t-esc="reservation.state"/></p>
+            <p>Payment Status: <strong t-esc="reservation.payment_status"/></p>
+          </t>
           <a href="/" class="btn btn-primary mt-4">Back to Home</a>
         </div>
       </div>

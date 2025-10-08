@@ -1,0 +1,21 @@
+<odoo>
+  <data noupdate="1">
+    <!-- Get the ID of the model -->
+    <record id="model_restaurant_table" model="ir.model">
+      <field name="name">restaurant.table</field>
+      <field name="model">restaurant.table</field>
+    </record>
+
+    <!-- Scheduled action -->
+    <record id="ir_cron_auto_release_tables" model="ir.cron">
+      <field name="name">Auto Release Expired Tables</field>
+      <field name="model_id" ref="model_restaurant_table"/>
+      <field name="state">code</field>
+      <field name="code">model.release_table_if_expired()</field>
+      <field name="interval_number">10</field>
+      <field name="interval_type">minutes</field>
+      <field name="numbercall">-1</field>
+      <field name="active">True</field>
+    </record>
+  </data>
+</odoo>
