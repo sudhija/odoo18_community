@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+     <data noupdate="1">
+        <record id="vitouzkf_developer" model="vitouzkf.developer">
+            <field name="name">REAM VITOU</field>
+            <field name="email">reamvitou@yahoo.com</field>
+            <field name="telephone">+855 17 82 66 82</field>
+
+        </record>
+
+    </data>
+</odoo>

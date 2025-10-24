@@ -1,11 +1,9 @@
 /** @odoo-module */
-import { registry} from '@web/core/registry';
+import { registry } from '@web/core/registry';
 import { useService } from "@web/core/utils/hooks";
-const { Component, onWillStart, onMounted} = owl
-import { jsonrpc } from "@web/core/network/rpc_service";
-import { Domain } from "@web/core/domain";
+import { Component, onWillStart, onMounted } from '@odoo/owl';
 import { _t } from "@web/core/l10n/translation";
-import {serializeDate,serializeDateTime,} from "@web/core/l10n/dates";
+import { serializeDate, serializeDateTime } from "@web/core/l10n/dates";
 const today = new Date();
 const day = today.getDate(); // Returns the day of the month (1-31)
 const month = today.getMonth() + 1; // Returns the month (0-11); Adding 1 to match regular months (1-12)
@@ -16,60 +14,43 @@ export class CustomDashBoard extends Component {
     /**
      * Setup method to initialize required services and register event handlers.
      */
-setup() {
-this.action = useService("action");
-this.orm = useService("orm");
-onWillStart(this.onWillStart);
-onMounted(this.onMounted);
-}
-async onWillStart() {
-await this.fetch_data();
-}
-async onMounted() {
-// Render other components after fetching data
-// this.render_project_task();
-// this.render_top_employees_graph();
-// this.render_filter();
-}
-fetch_data() {
-       var self = this;
-       console.log("dafdaafdfadf", this)
-       //RPC call for retrieving data for displaying on dashboard tiles
-       var def1= jsonrpc('/web/dataset/call_kw/room.booking/get_details'
-       ,{ model:'room.booking',
-          method:'get_details',
-           args: [{}],
-           kwargs: {},
-       }).then(function(result){
-            document.getElementsByClassName("total_room").innerHTML=['total_room']
-            self.total_room=result['total_room']
-            self.available_room=result['available_room']
-            self.staff=result['staff']
-            self.check_in=result['check_in']
-            self.reservation=result['reservation']
-            self.check_out=result['check_out']
-            self.total_vehicle=result['total_vehicle']
-            self.available_vehicle=result['available_vehicle']
-            self.total_event=result['total_event']
-            self.today_events=result['today_events']
-            self.pending_events=result['pending_events']
-            self.food_items=result['food_items']
-            self.food_order=result['food_order']
-            if(result['currency_position']=='before'){
-                self.total_revenue=result['currency_symbol']+" "+result['total_revenue']
-                self.today_revenue=result['currency_symbol']+" "+result['today_revenue']
-                self.pending_payment=result['currency_symbol']+" "+result['pending_payment']
-            }
-            else{
-                self.total_revenue=+result['total_revenue']+" "+result['currency_symbol']
-                self.today_revenue=result['today_revenue']+" "+result['currency_symbol']
-                self.pending_payment=result['pending_payment']+" "+result['currency_symbol']
-            }
+    setup() {
+        this.action = useService("action");
+        this.orm = useService("orm");
+        onWillStart(async () => await this.fetch_data());
+        onMounted(() => {});
+    }
 
-       });
-
-           return $.when(def1);
-     }
+    async fetch_data() {
+        // use the orm service to call the model method
+        try {
+            const result = await this.orm.call('room.booking', 'get_details', [{}]);
+            this.total_room = result.total_room;
+            this.available_room = result.available_room;
+            this.staff = result.staff;
+            this.check_in = result.check_in;
+            this.reservation = result.reservation;
+            this.check_out = result.check_out;
+            this.total_vehicle = result.total_vehicle;
+            this.available_vehicle = result.available_vehicle;
+            this.total_event = result.total_event;
+            this.today_events = result.today_events;
+            this.pending_events = result.pending_events;
+            this.food_items = result.food_items;
+            this.food_order = result.food_order;
+            if (result.currency_position === 'before') {
+                this.total_revenue = result.currency_symbol + " " + result.total_revenue;
+                this.today_revenue = result.currency_symbol + " " + result.today_revenue;
+                this.pending_payment = result.currency_symbol + " " + result.pending_payment;
+            } else {
+                this.total_revenue = result.total_revenue + " " + result.currency_symbol;
+                this.today_revenue = result.today_revenue + " " + result.currency_symbol;
+                this.pending_payment = result.pending_payment + " " + result.currency_symbol;
+            }
+        } catch (err) {
+            console.error('Failed to fetch dashboard data', err);
+        }
+    }
      total_rooms(e){
         var self = this;
         e.stopPropagation();
@@ -296,3 +277,4 @@ fetch_data() {
 }
 CustomDashBoard.template = "CustomDashBoard"
 registry.category("actions").add("custom_dashboard_tags", CustomDashBoard)
+console.log('hotel_management_odoo: CustomDashBoard action registered');

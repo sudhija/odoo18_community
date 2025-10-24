@@ -7,11 +7,12 @@
       <xpath expr="//sheet" position="inside">
         <group string="Website">
           <field name="is_published"/>
-          <field name="website_category_id"/>
+          <!--field name="website_category_id"/-->
           <field name="cover_image" widget="image"/>
-          <field name="base_price"/>
-          <field name="tax_percent"/>
-          <field name="facility_ids" widget="many2many_tags"/>
+          <!--field name="base_price"/-->
+          <!--field name="tax_percent"/-->
+          <field name="amenity_ids" widget="many2many_tags"/>
+          <!--field name="facility_ids" widget="many2many_tags"/-->
         </group>
       </xpath>
 

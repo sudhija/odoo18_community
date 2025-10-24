@@ -7,7 +7,7 @@
     </record>
     <!--Menu Dashboard-->
     <menuitem name="Dashboard" id="hotel_dashboard_menu"
-              groups="hotel_management_odoo.hotel_group_reception"
+              groups="hotel_management_odoo.hotel_group_reception,hotel_management_odoo.hotel_group_admin"
               parent="hotel_management_menu_root"
               action="hotel_dashboard_action"/>
 </odoo>

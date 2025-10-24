@@ -1,0 +1,14 @@
+
+
+
+group_vitouzk_staff
+group_vitouzk_hrstaff
+group_vitouzk_it
+group_vitouzk_administrator
+
+
+all =vitou_zk_attendance.group_vitouzk_staff,vitou_zk_attendance.group_vitouzk_hrstaff,vitou_zk_attendance.group_vitouzk_it,vitou_zk_attendance.group_vitouzk_administrator
+
+admin=vitou_zk_attendance.group_vitouzk_it,vitou_zk_attendance.group_vitouzk_administrator
+
+base.group_user

@@ -266,11 +266,26 @@ class RoomBooking(models.Model):
     def _compute_pricelist_id(self):
         """Computes PriceList"""
         for order in self:
-            if not order.partner_id:
-                order.pricelist_id = False
+            # try partner's pricelist first
+            try:
+                order = order.with_company(order.company_id)
+            except Exception:
+                # if company context is not available, continue with current env
+                pass
+            if order.partner_id and order.partner_id.property_product_pricelist:
+                order.pricelist_id = order.partner_id.property_product_pricelist
                 continue
-            order = order.with_company(order.company_id)
-            order.pricelist_id = order.partner_id.property_product_pricelist
+            # fallback to the default public pricelist (product.list0)
+            try:
+                default_pl = self.env.ref('product.list0')
+                if default_pl:
+                    order.pricelist_id = default_pl
+                    continue
+            except Exception:
+                pass
+            # last-resort: pick any existing pricelist to satisfy required constraint
+            pl = self.env['product.pricelist'].search([], limit=1)
+            order.pricelist_id = pl or False
 
     @api.depends('price_unit', 'quantity', 'tax_ids')# me added 
     def _compute_price_subtotal(self):

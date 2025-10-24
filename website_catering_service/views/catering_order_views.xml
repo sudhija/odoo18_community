@@ -1,0 +1,57 @@
+<odoo>
+    <!-- Tree/List View -->
+    <record id="view_catering_order_tree" model="ir.ui.view">
+        <field name="name">catering.order.list</field>
+        <field name="model">catering.order</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="customer_name"/>
+                <field name="email"/>
+                <field name="phone"/>
+                <field name="event_date"/>
+                <field name="quantity"/>
+                <field name="final_total"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_catering_order_form" model="ir.ui.view">
+        <field name="name">catering.order.form</field>
+        <field name="model">catering.order</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="customer_name"/>
+                        <field name="email"/>
+                        <field name="phone"/>
+                        <field name="event_date"/>
+                        <field name="menu_selection"/>
+                        <field name="base_total"/>
+                        <field name="quantity"/>
+                        <field name="final_total"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_catering_order" model="ir.actions.act_window">
+        <field name="name">Catering Orders</field>
+        <field name="res_model">catering.order</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_catering_root"
+              name="Catering"
+              sequence="10"/>
+
+    <menuitem id="menu_catering_orders"
+              name="Catering Orders"
+              parent="menu_catering_root"
+              action="action_catering_order"
+              sequence="1"/>
+</odoo>

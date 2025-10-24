@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- List view -->
+  <record id="view_catering_category_list" model="ir.ui.view">
+    <field name="name">catering.category.list</field>
+    <field name="model">catering.category</field>
+    <field name="type">list</field>
+    <field name="arch" type="xml">
+      <list string="Catering Categories">
+        <field name="name"/>
+        <field name="sequence"/>
+        <field name="website_published"/>
+        <field name="default_product_id"/>
+      </list>
+    </field>
+  </record>
+
+  <!-- Form view -->
+  <record id="view_catering_category_form" model="ir.ui.view">
+    <field name="name">catering.category.form</field>
+    <field name="model">catering.category</field>
+    <field name="type">form</field>
+    <field name="arch" type="xml">
+      <form string="Catering Category">
+        <sheet>
+          <group>
+            <field name="name"/>
+            <field name="sequence"/>
+            <field name="website_published"/>
+            <field name="product_ids" widget="many2many_tags"/>
+            <field name="default_product_id"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <!-- Action -->
+  <record id="action_catering_category" model="ir.actions.act_window">
+    <field name="name">Catering Categories</field>
+    <field name="res_model">catering.category</field>
+    <field name="view_mode">list,form</field>
+  </record>
+
+  <!-- Menus (NO parent to avoid missing-XML-ID errors) -->
+  <menuitem id="menu_catering_root" name="Catering" sequence="95"/>
+  <menuitem id="menu_catering_categories" name="Catering Categories"
+            parent="menu_catering_root" action="action_catering_category" sequence="10"/>
+</odoo>

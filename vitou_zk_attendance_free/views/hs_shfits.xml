@@ -1,0 +1,71 @@
+<odoo>
+    <data>
+        <record id="hs_shifts_list_view" model="ir.ui.view">
+            <field name="name">vitouzkf.hs.shifts.view.list</field>
+            <field name="model">vitouzkf.hs.shifts</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="shift_in" widget="float_time"/>
+                    <field name="shift_out" widget="float_time"/>
+                    <field name="work_hour"/>
+<!--                    <field name="rest_hours"/>-->
+                    <field name="active" string="Active" widget="boolean_toggle"/>
+                    <field name="is_same_day"/>
+                    <field name="state" widget="label_selection" options="{'classes':{'posted':'primary','done':'danger'}}"/>
+                </list>
+            </field>
+        </record>
+        <record id="hs_shifts_form_view" model="ir.ui.view">
+            <field name="name">vitouzkf.hs.shifts.view.form</field>
+            <field name="model">vitouzkf.hs.shifts</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+
+                        <button name="action_done" type="object" string="Done" class="btn-primary" invisible="state != 'posted'"/>
+                        <button name="action_undodone" type="object" string="Undo Done" confirm="Undo Done?" invisible="state !='done'" class="btn-danger"/>
+
+                        <field name="state" widget="statusbar"
+                           statusbar_visible="posted,done" class="mr1"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name" readonly="state =='done'"/>
+                                <field name="shift_in" widget="float_time"  readonly="state =='done'"/>
+                                <field name="work_hour"  readonly="state =='done'"/>
+                            </group>
+                            <group>
+                                <field name="active" string="Active" widget="boolean_toggle"  readonly="state =='done'"/>
+                                <field name="shift_out" widget="float_time"  readonly="state =='done'"/>
+
+                                  <field name="is_same_day"  readonly="state =='done'"/>
+<!--                                <field name="rest_hours"  readonly="state =='done'" />-->
+
+<!--                                <field name="shift_out" widget="float_time"   readonly="state =='done'"/>-->
+
+
+
+
+                            </group>
+                        </group>
+                    </sheet>
+
+                </form>
+            </field>
+        </record>
+
+
+        <record id="action_vitouzk_open_shifts" model="ir.actions.act_window">
+            <field name="name">Timing Shifts</field>
+            <field name="res_model">vitouzkf.hs.shifts</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+<!--        <menuitem id="menu_hs_shift"-->
+<!--                  name="Time Shifts"-->
+<!--                  parent="hr.menu_hr_employee_payroll"-->
+<!--                  action="action_vitouzk_open_shifts"/>-->
+    </data>
+</odoo>

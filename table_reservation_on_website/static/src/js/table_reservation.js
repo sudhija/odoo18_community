@@ -1,6 +1,7 @@
 /** @odoo-module */
 import publicWidget from "@web/legacy/js/public/public_widget";
-import { jsonrpc } from "@web/core/network/rpc_service";
+import { rpc } from "@web/core/network/rpc";  // ✅ correct import
+
 
 publicWidget.registry.table_reservation = publicWidget.Widget.extend({
     selector: '.swa_container',
@@ -26,7 +27,7 @@ publicWidget.registry.table_reservation = publicWidget.Widget.extend({
 
         var self = this;
         if (floors && date && start) {
-            jsonrpc("/restaurant/floors/tables", {
+            rpc("/restaurant/floors/tables", {
                 'floors_id': floors,
                 'date': date,
                 'start': start,

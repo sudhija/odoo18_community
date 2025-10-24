@@ -64,4 +64,24 @@
                eval="[(4, ref('hotel_management_odoo.hotel_group_admin'))]"/>
         <field name="domain_force">[(1, '=', 1)]</field>
     </record>
+        <!--record id="maintenance_request_rule_admin" model="ir.rule">
+        <field name="name">Maintenance Request Admin Full Access</field>
+        <field name="model_id" ref="model_maintenance_request"/>
+        <field name="groups" eval="[(4, ref('hotel_management_odoo.hotel_group_admin'))]"/>
+        <field name="domain_force">[(1,'=',1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+    <record id="cleaning_request_rule_admin" model="ir.rule">
+        <field name="name">Cleaning Request Admin Full Access</field>
+        <field name="model_id" ref="model_cleaning_request"/>
+        <field name="groups" eval="[(4, ref('hotel_management_odoo.hotel_group_admin'))]"/>
+        <field name="domain_force">[(1,'=',1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record-->
 </odoo>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+    <record id="view_vitouzk_vitouzkf_download_att_form" model="ir.ui.view">
+        <field name="name">vitouzkf.download.att.form</field>
+        <field name="model">vitouzkf.download.att</field>
+        <field name="arch" type="xml">
+            <form string="Download Staff Attendance" duplicate="0">
+                <sheet>
+
+
+                    <group>
+                        <group>
+                            <field name="device_id"/>
+                             <field name="date_from"/>
+                             <field name="date_to"/>
+
+
+                        </group>
+                        <group>
+                             <field name="device_ip"/>
+                             <field name="port_number"/>
+                             <field name="company_id"/>
+                        </group>
+                    </group>
+
+                    <footer style="height:40px;">
+
+                        <button type="object" name="action_test_connection" string="Test Conn." class="btn-primary" icon="fa-question-circle "/>
+                        <button type="object" name="action_download_attendance" string="Download Att" class="btn-success" icon="fa-download"/>
+
+<!--                        <button type="object" name="action_close" string="Cancel" class="btn-primary" icon="fa-times-circle"/>-->
+
+<!--                        <button type="object" name="action_close" string="Close" class="btn-primary"/>-->
+
+                    </footer>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="action_vitouzk_download_att_view" model="ir.actions.act_window">
+        <field name="name">Download Staff Attendance</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">vitouzkf.download.att</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <!--        <field name="context">{'search_default_filter_today':1}</field>-->
+        <field name="view_id" ref="vitou_zk_attendance_free.view_vitouzk_vitouzkf_download_att_form"/>
+        <!--         <field name="view_ids"-->
+        <!--                       eval="[(5, 0, 0),-->
+        <!--                                  (0, 0, {'view_mode': 'kanban', 'view_id': ref('view_vitouslot_dailypayout_kanban')}),-->
+        <!--                                  (0, 0, {'view_mode': 'list', 'view_id': ref('view_vitouslot_dailypayout_list')}),-->
+        <!--                                  (0, 0, {'view_mode': 'graph', 'view_id': ref('view_vitouslot_metercage_graph')}),-->
+        <!--                                  ]"/>-->
+
+    </record>
+
+
+</odoo>

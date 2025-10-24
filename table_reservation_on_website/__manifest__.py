@@ -18,22 +18,27 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['pos_restaurant', 'base', 'website_sale', 'sale_management'],
+    'depends': [
+        'pos_restaurant',
+        'base',
+        'website_sale',
+        'sale_management',
+        'website_event',  # ✅ Added to support event registrations properly
+    ],
     'data': [
         'security/ir.model.access.csv',
         'data/automatic_invoice.xml',
         'data/table_reservation_data.xml',
         'data/product_product_data.xml',
-        'data/scheduled_action.xml',  # ✅ Auto-release CRON
+        'data/scheduled_action.xml',
         'views/table_reservation_templates.xml',
         'views/table_reservation_on_website_menus.xml',
         'views/restaurant_table_views.xml',
         'views/restaurant_floor_views.xml',
-        'views/table_reservation_views.xml',
+        'views/table_reservation_views.xml',  
         'views/sale_order_views.xml',
         'views/table_reserved_templates.xml',
         'views/res_config_settings_views.xml',
-        
     ],
     'assets': {
         'point_of_sale._assets_pos': [
@@ -52,7 +57,7 @@
             'table_reservation_on_website/static/src/js/table_reservation.js',
             'table_reservation_on_website/static/src/js/reservation.js',
             'table_reservation_on_website/static/src/js/reservation_floor.js',
-            # 'table_reservation_on_website/static/src/js/floor_plan.js',  # ✅ New responsive UI
+            # 'table_reservation_on_website/static/src/js/floor_plan.js',
         ],
     },
     'images': ['static/description/banner.png'],
@@ -61,3 +66,4 @@
     'auto_install': False,
     'application': False,
 }
+

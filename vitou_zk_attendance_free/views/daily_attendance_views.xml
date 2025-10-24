@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data noupdate="1">
+    <!-- Placeholder view file to satisfy manifest during module upgrade.
+         The real views should be added by the module author. -->
+  </data>
+</odoo>

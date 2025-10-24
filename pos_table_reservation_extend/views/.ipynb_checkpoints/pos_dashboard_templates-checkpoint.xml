@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Assets -->
+    <!-- <template id="assets_pos_dashboard" inherit_id="point_of_sale.assets" name="POS Dashboard Assets">
+        <xpath expr="." position="inside">
+            <link rel="stylesheet" type="text/css" href="/pos_table_reservation_extend/static/src/css/pos_dashboard.css"/>
+            <script type="text/javascript" src="/pos_table_reservation_extend/static/src/js/status_refresh.js"></script>
+        </xpath>
+    </template> -->
+
+    <!-- Main Dashboard Template -->
+    <template id="pos_dashboard_template" name="POS Manager Dashboard">
+    <t t-call="website.layout">
+        <div class="container pos-dashboard py-4">
+
+            <!-- Header Row -->
+            <div class="row mb-4 align-items-center">
+                <div class="col-md-8">
+                    <h2 class="fw-bold">🍽 POS Floor Plans</h2>
+                    <p class="text-muted">
+                        View and manage floors &amp; table statuses:
+                        <span class="badge bg-success">Available</span>
+                        <span class="badge bg-warning text-dark">Future</span>
+                        <span class="badge bg-danger">Occupied</span>
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <select id="floor_select" class="form-select shadow-sm" style="max-width:300px;">
+                        <option value="0">All Floors</option>
+                        <t t-foreach="floors" t-as="floor">
+                            <option t-att-value="floor.id"><t t-esc="floor.name"/></option>
+                        </t>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Floors Grid -->
+            <div class="row g-4" id="floors_container">
+                <t t-foreach="floors" t-as="floor">
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card shadow-sm border-0 h-100 floor-card" t-att-data-floor-id="floor.id">
+                            <div class="card-body text-center">
+
+                                <!-- Floor Icon (default table icon) -->
+                                <div class="mb-3">
+                                    <i class="fa fa-utensils fa-2x text-secondary"></i>
+                                </div>
+
+                                <!-- Floor Name -->
+                                <h5 class="fw-bold mb-2">
+                                    <t t-esc="floor.name"/>
+                                </h5>
+
+                                <!-- Table Count -->
+                                <p class="text-muted small mb-3">
+                                    <strong><t t-esc="len(floor.table_ids)"/></strong> total tables
+                                </p>
+
+                                <!-- Status Badges -->
+                                <div class="d-flex flex-wrap justify-content-center gap-2">
+                                    <t t-set="available_count" t-value="sum(1 for t in floor.table_ids if (t.color_status or 'green') == 'green')"/>
+                                    <t t-set="future_count" t-value="sum(1 for t in floor.table_ids if (t.color_status or '') == 'yellow')"/>
+                                    <t t-set="occupied_count" t-value="sum(1 for t in floor.table_ids if (t.color_status or '') == 'red')"/>
+
+                                    <span class="badge bg-success px-3 py-2">
+                                        <t t-esc="available_count"/> Available
+                                    </span>
+                                    <span class="badge bg-warning text-dark px-3 py-2">
+                                        <t t-esc="future_count"/> Future
+                                    </span>
+                                    <span class="badge bg-danger px-3 py-2">
+                                        <t t-esc="occupied_count"/> Occupied
+                                    </span>
+                                </div>
+
+                                <!-- Divider -->
+<hr class="my-3"/>
+
+
+                                <!-- Table Icons -->
+                                <div class="d-flex flex-wrap justify-content-center gap-2">
+                                    <t t-foreach="floor.table_ids" t-as="table">
+                                        <div t-att-data-table-id="table.id"
+                                             t-attf-class="p-2 rounded border small fw-bold table-status-icon bg-#{table.color_status or 'success'} text-white"
+                                             style="min-width:60px; text-align:center; cursor:pointer;">
+                                            <t t-esc="table.name"/>
+                                        </div>
+                                    </t>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+
+        </div>
+    </t>
+</template>
+
+
+    <!-- Modal -->
+    <template id="pos_dashboard_modal_template">
+        <div class="modal fade" id="posDashboardModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Table Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="modal-body-content">Details...</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</odoo>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Defined all menus here -->
+    <menuitem id="vitouzk_main_menu"
+              name="Biometric Device"
+              parent="hr_attendance.menu_hr_attendance_root"
+              sequence="21"/>
+
+     <menuitem id="vitouzk_daily_attendance_all_menu"
+              name="Manage Attendance for Fixed Shift"
+              action="daily_attendance_all_action"
+              parent="vitouzk_main_menu"
+              groups="hr.group_hr_user"
+               sequence="22"/>
+
+     <menuitem id="vitouzk_daily_attendance_all_flexible_menu"
+              name="Manage Attendance for Flexible Shift"
+              action="daily_attendance_all_flexible_action"
+              parent="vitouzk_main_menu"
+              groups="hr.group_hr_user"
+               sequence="23"/>
+
+        <menuitem id="vitouzk_attendance_employee_menu"
+              name="Employee"
+              action="hr.open_view_employee_list_my"
+              parent="vitouzk_main_menu"
+              groups="hr.group_hr_user"
+              sequence="24"/>
+
+    <menuitem id="vitouzk_set_device_menu"
+              name="Device Configuration"
+              action="biometric_device_details_action"
+              parent="vitouzk_main_menu"
+              groups="vitou_zk_attendance_free.group_vitouzkf_it,vitou_zk_attendance_free.group_vitouzkf_administrator"
+              sequence="25"/>
+
+
+<!--    <menuitem id="daily_attendance_menu"-->
+<!--              name="Attendance Logs"-->
+<!--              action="daily_attendance_action"-->
+<!--              parent="vitouzk_main_menu"-->
+<!--              groups="hr_attendance.group_hr_attendance_officer"-->
+<!--              sequence="23"/>-->
+
+
+     <menuitem id="vitouzk_attendance_user_menu"
+              name="ZK User"
+              action="zk_machine_attendance_user_action"
+              parent="vitouzk_main_menu"
+              groups="base.group_user"
+               sequence="26"/>
+
+    <menuitem id="vitouzk_attendance_shift_menu"
+              name="Shift"
+              action="action_vitouzk_open_shifts"
+              parent="vitouzk_main_menu"
+              groups="base.group_user"
+               sequence="27"/>
+
+    <menuitem
+                id="menu_vitouszk_help"
+                name="Help"
+                parent="vitouzk_main_menu"
+                action="vitouzk_action_help"
+                sequence="50"/>
+
+
+</odoo>

@@ -31,3 +31,10 @@ class AccountMove(models.Model):
                                        string="Booking Reference",
                                        readonly=True, help="Choose the Booking"
                                                            "Reference")
+    # Compatibility: some accounting views/extensions expect this field
+    # to exist on account.move. Provide a lightweight float field so
+    # that those views can be parsed without error.
+    expected_currency_rate = fields.Float(
+        string='Expected Currency Rate',
+        help='Optional: expected currency conversion rate for the move',
+    )

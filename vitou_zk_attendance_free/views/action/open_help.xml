@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data noupdate="0">
+    <record id="vitouzk_action_help" model="ir.actions.act_url">
+      <field name="name">Help</field>
+<!--      <field name="url">https://www.yahoo.com</field>-->
+      <field name="url">/vitou_zk_attendance_free/static/description/index.html</field>
+      <field name="target">new</field>
+    </record>
+  </data>
+
+
+</odoo>

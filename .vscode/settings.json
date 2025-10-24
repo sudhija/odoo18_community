@@ -1,5 +1,7 @@
 {
     "workbench.editor.autoLockGroups": {
         "jupyter-notebook": true
-    }
+    },
+    "javascript.format.insertSpaceAfterConstructor": true,
+    "perplexityProAI.apiKey": "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"
 }

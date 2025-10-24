@@ -1,0 +1,99 @@
+<odoo>
+  <template id="report_saleorder_catering_align" inherit_id="sale.report_saleorder_document">
+
+    <!-- Remove bottom Notes (any variant) -->
+    <xpath expr="//*[contains(@t-field, 'o.note') or contains(@t-field, 'doc.note')]" position="replace">
+      <t/>
+    </xpath>
+
+    <!-- Remove the built-in address/contact blocks in the header -->
+    <xpath expr="//*[contains(@t-field, 'partner_shipping_id') or contains(@t-field, 'doc.partner_shipping_id')]" position="replace">
+      <t/>
+    </xpath>
+    <xpath expr="//*[ (contains(@t-field,'partner_id') or contains(@t-field,'doc.partner_id'))
+                     and contains(@t-options, 'widget')
+                     and contains(@t-options, 'contact') ]" position="replace">
+      <t/>
+    </xpath>
+
+    <!-- Insert right-side “Customer Details” box BEFORE the lines table -->
+    <xpath expr="//table[contains(@class,'o_main_table')]" position="before">
+      <t t-foreach="docs" t-as="o">
+        <t t-set="co" t-value="o.env['catering.order'].sudo().search([('sale_order_id','=',o.id)], limit=1)"/>
+        <t t-set="service_val" t-value="co and co.service_type or ''"/>
+        <t t-set="service_label" t-value="
+            service_val == 'takeaway' and 'Take Away' or
+            (service_val == 'delivery' and 'Delivery &amp; Transportation' or
+            (service_val == 'delivery_suppliers' and 'Delivery &amp; Transportation &amp; Suppliers' or ''))"/>
+
+        <div class="row mt8">
+          <div class="col-6"></div>
+          <div class="col-6">
+            <div class="border rounded p-2">
+              <strong>Customer Details</strong>
+              <div class="mt4">
+                <div><strong>Customer :</strong> <span t-esc="o.partner_id.name or ''"/></div>
+                <div><strong>Address&#160;&#160;:</strong> <span t-esc="o.partner_id.contact_address or ''"/></div>
+                <div><strong>Service type :</strong> <span t-esc="service_label or ''"/></div>
+                <t t-if="co and co.service_type == 'delivery_suppliers' and co.suppliers_count">
+                  <div><strong>Suppliers&#160;:</strong> <span t-esc="int(co.suppliers_count)"/></div>
+                </t>
+                <div><strong>Phone&#160;&#160;&#160;&#160;:</strong> <span t-esc="o.partner_id.phone or o.partner_id.mobile or ''"/></div>
+                <div><strong>Email&#160;&#160;&#160;&#160;:</strong> <span t-esc="o.partner_id.email or ''"/></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </t>
+    </xpath>
+
+    <!-- Compact + alignment CSS (and hide Taxes column + per-section subtotals) -->
+    <xpath expr="//div[@class='page']" position="before">
+      <style type="text/css">
+        .o_main_table.cater-compact td { padding-top: 2px; padding-bottom: 2px; }
+
+        /* Center quantity column for normal lines */
+        .o_main_table thead th:nth-child(3),
+        .o_main_table tbody tr:not(.o_line_section):not(.o_line_note) td:nth-child(3) {
+          text-align: center;
+        }
+
+        /* Right-align unit price and amount for normal lines */
+        .o_main_table thead th:nth-child(4),
+        .o_main_table tbody tr:not(.o_line_section):not(.o_line_note) td:nth-child(4),
+        .o_main_table thead th:last-child,
+        .o_main_table tbody tr:not(.o_line_section):not(.o_line_note) td:last-child {
+          text-align: right;
+        }
+
+        /* Keep category headings and notes left-aligned */
+        .o_main_table tbody tr.o_line_section td,
+        .o_main_table tbody tr.o_line_note td {
+          text-align: left !important;
+        }
+
+        .o_report_total { text-align: right; }
+
+        /* ===== Hide Taxes column (header + body). In standard report, Taxes is second-to-last column. */
+        .o_main_table thead th:nth-last-child(2),
+        .o_main_table tbody tr td:nth-last-child(2) {
+          display: none !important;
+        }
+
+        /* ===== Hide per-section Subtotal rows (CSS-only; no xpaths) =====
+           Cover the common class names Odoo uses across versions. */
+        .o_main_table tbody tr.is_subtotal,
+        .o_main_table tbody tr.is-subtotal,
+        .o_main_table tbody tr.o_subtotal,
+        .o_main_table tbody tr.o_line_subtotal {
+          display: none !important;
+        }
+      </style>
+    </xpath>
+
+    <xpath expr="//table[contains(@class,'o_main_table')]" position="attributes">
+      <attribute name="class" add=" cater-compact" separator=" "/>
+    </xpath>
+
+  </template>
+</odoo>

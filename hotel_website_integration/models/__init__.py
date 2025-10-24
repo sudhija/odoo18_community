@@ -6,3 +6,5 @@ from . import account_move
 from . import hotel_room    
 from . import room_booking
 from . import sale_order_line
+from . import hotel_room_cron
+from . import hotel_room_type

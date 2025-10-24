@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="report_template_vitouzkf_att_flexible_report" model="ir.actions.report">
+        <field name="name">Attendance List for flexible Shift</field>
+        <field name="model">vitouzkf.attendance.all.flexible</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">vitou_zk_attendance_free.report_vitouzkf_att_flexible_report</field>
+        <field name="report_file">vitou_zk_attendance_free.report_vitouzkf_att_flexible_report</field>
+        <field name="print_report_name">"att_flexible_shift_report_" + time.strftime('%Y-%m-%d')</field>
+        <field name="binding_model_id" ref="vitou_zk_attendance_free.model_vitouzkf_attendance_all_flexible"/>
+        <field name="paperformat_id" ref="vitou_zk_attendance_free.paperformat_vitouzkf_landscap"/>
+        <field name="binding_type">report</field>
+
+    </record>
+
+    <!--    <record id="paperformat_payoutslip_report" model="report.paperformat">-->
+    <!--        <field name="name">Payout Slip</field>-->
+    <!--        <field name="default" eval="True"/>-->
+    <!--        <field name="format">custom</field>-->
+    <!--        <field name="page_height">210</field>-->
+    <!--        <field name="page_width">148</field>-->
+    <!--        <field name="orientation">Portrait</field>-->
+    <!--        <field name="margin_top">25</field>-->
+    <!--        <field name="margin_bottom">10</field>-->
+    <!--        <field name="margin_left">7</field>-->
+    <!--        <field name="margin_right">7</field>-->
+    <!--        <field name="header_line" eval="False"/>-->
+    <!--        <field name="header_spacing">20</field>-->
+    <!--        <field name="dpi">120</field>-->
+    <!--    </record>-->
+
+
+    <template id="report_vitouzkf_att_flexible_report">
+        <t t-call="web.html_container">
+            <!--            <t t-foreach="docs" t-as="data">-->
+
+
+            <t t-call="web.external_layout">
+
+                <div class="container">
+                    <div class="page-header text-center">
+                        <h2>Monthly ATT Flexible Shift:
+                            <t t-esc="data[0]['month']" t-if="data"/>
+                        </h2>
+
+
+                    </div>
+
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th style="width:50px;">
+                                    Staff Name
+                                </th>
+                                <th style="width:20px;">Total</th>
+                                <th class="text-center">1</th>
+                                <th class="text-center">2</th>
+                                <th class="text-center">3</th>
+                                <th class="text-center">4</th>
+                                <th class="text-center">5</th>
+                                <th class="text-center">6</th>
+                                <th class="text-center">7</th>
+                                <th class="text-center">8</th>
+                                <th class="text-center">9</th>
+                                <th class="text-center">10</th>
+                                <th class="text-center">11</th>
+                                <th class="text-center">12</th>
+                                <th class="text-center">13</th>
+                                <th class="text-center">14</th>
+                                <th class="text-center">15</th>
+                                <th class="text-center">16</th>
+                                <th class="text-center">17</th>
+                                <th class="text-center">18</th>
+                                <th class="text-center">19</th>
+                                <th class="text-center">20</th>
+                                <th class="text-center">21</th>
+                                <th class="text-center">22</th>
+                                <th class="text-center">23</th>
+                                <th class="text-center">24</th>
+                                <th class="text-center">25</th>
+                                <th class="text-center">26</th>
+                                <th class="text-center">27</th>
+                                <th class="text-center">28</th>
+                                <th class="text-center">29</th>
+                                <th class="text-center">30</th>
+                                <th class="text-center">31</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <t t-foreach="data[0]['dep_name']" t-as="dep" t-if="len(data)>0">
+
+                                <div class="container">
+
+                                    <tr>
+                                        <td colspan="33" class="p-1 mt-1 align-middle" style="height:30px; ">
+                                            <h3 t-esc="dep['dep_name']" class="p-1 m-1"></h3>
+                                        </td>
+                                    </tr>
+
+
+                                    <t t-foreach="data[0]['data']" t-as="d" t-if="len(data)>0">
+                                        <t>
+
+
+                                            <t t-if="d['dep_name']==dep['dep_name']">
+
+                                                <tr>
+                                                    <td t-esc="d['employee_name']"/>
+                                                    <td class="text-center" t-esc="d['total_work_hour']"></td>
+                                                    <t t-set="days" t-value="d['day_hour'] or []"/>
+
+                                                    <td class="text-center">
+                                                        <t t-esc="days[0]['hour']"
+                                                           t-if="len(days)>0  and days[0]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[1]['hour']"
+                                                           t-if="len(days)>1 and days[1]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[2]['hour']"
+                                                           t-if="len(days)>2  and days[2]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[3]['hour']"
+                                                           t-if="len(days)>3 and days[3]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[4]['hour']"
+                                                           t-if="len(days)>4 and days[4]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[5]['hour']"
+                                                           t-if="len(days)>5  and days[5]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[6]['hour']"
+                                                           t-if="len(days)>6  and days[6]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[7]['hour']"
+                                                           t-if="len(days)>7  and days[7]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[8]['hour']"
+                                                           t-if="len(days)>8  and days[8]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[9]['hour']"
+                                                           t-if="len(days)>9  and days[9]['hour']>0"/>
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        <t t-esc="days[10]['hour']"
+                                                           t-if="len(days)>10  and days[10]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[11]['hour']"
+                                                           t-if="len(days)>11  and days[11]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[12]['hour']"
+                                                           t-if="len(days)>12  and days[12]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[13]['hour']"
+                                                           t-if="len(days)>13  and days[13]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[14]['hour']"
+                                                           t-if="len(days)>14  and days[14]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[15]['hour']"
+                                                           t-if="len(days)>15  and days[15]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[16]['hour']"
+                                                           t-if="len(days)>16  and days[16]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[17]['hour']"
+                                                           t-if="len(days)>17  and days[17]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[18]['hour']"
+                                                           t-if="len(days)>18  and days[18]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[19]['hour']"
+                                                           t-if="len(days)>19  and days[19]['hour']>0"/>
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        <t t-esc="days[20]['hour']"
+                                                           t-if="len(days)>20  and days[20]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[21]['hour']"
+                                                           t-if="len(days)>21  and days[21]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[22]['hour']"
+                                                           t-if="len(days)>22  and days[22]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[23]['hour']"
+                                                           t-if="len(days)>23  and days[23]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[24]['hour']"
+                                                           t-if="len(days)>24  and days[24]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[25]['hour']"
+                                                           t-if="len(days)>25  and days[25]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[26]['hour']"
+                                                           t-if="len(days)>26  and days[26]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[27]['hour']"
+                                                           t-if="len(days)>27  and days[27]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[28]['hour']"
+                                                           t-if="len(days)>28  and days[28]['hour']>0"/>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-esc="days[29]['hour']"
+                                                           t-if="len(days)>29 and days[29]['hour']"/>
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        <t t-esc="days[30]['hour']"
+                                                           t-if="len(days)>30 and days[30]['hour']>0"/>
+                                                    </td>
+
+
+                                                </tr>
+
+
+                                            </t>
+
+
+                                        </t>
+
+                                    </t>
+
+
+                                </div>
+
+
+                            </t>
+
+                        </tbody>
+
+                    </table>
+
+
+                    <div class="footer">
+
+                        <div class="container">
+                            <div class="row">
+
+                                <div class="col-4 text-center border-top border-primary ">
+
+                                    <div>
+                                        <p style="font-family: Khmer OS Content;">Prepared By</p>
+                                        <!--                                        <t t-if="doc.state=='approved'">-->
+                                        <!--                                            <p t-field="doc.approved_staff"></p>-->
+                                        <!--                                        </t>-->
+
+                                    </div>
+
+
+                                </div>
+                                <div class="col-4">
+
+                                </div>
+
+
+                                <div class="col-4 text-center border-top border-primary">
+
+                                    <div>
+                                        <p style="font-family: Khmer OS Content;">HR Manager</p>
+                                    </div>
+
+
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+                                <div name="footer_left_column" class="col-8 text-start">
+                                </div>
+                                <div name="footer_right_column" class="col-4 text-end">
+                                    <div name="pager">
+                                        Page:
+                                        <span class="page"/>
+                                        /
+                                        <span class="topage"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <!--                    end footer-->
+
+                </div>
+
+
+            </t>
+
+
+            <!--            </t>-->
+        </t>
+    </template>
+
+
+</odoo>
+

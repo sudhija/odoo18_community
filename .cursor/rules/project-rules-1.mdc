@@ -1,0 +1,68 @@
+---
+alwaysApply: true
+---
+DO NOT GIVE HIGH-LEVEL OR VAGUE ANSWERS. WHEN ASKED FOR CODE OR EXPLANATION, PROVIDE COMPLETE, WORKING, AND RELEVANT EXAMPLES OR STEP-BY-STEP GUIDANCE.
+
+Odoo Module Development:
+- Use Odoo 15+ conventions unless otherwise specified.
+- Create modular, reusable, and maintainable code following Odoo best practices.
+- Provide valid __manifest__.py files with correct dependencies and metadata.
+- Define models with Python classes inheriting from `models.Model`.
+- Use Odoo API decorators (@api.model, @api.depends, @api.onchange) correctly.
+- Write XML views (form, tree, search) respecting Odoo’s XML schema.
+- Define security rules in `security/ir.model.access.csv`.
+- Follow PEP 8 and Odoo naming conventions (snake_case, underscore prefixes).
+
+Building & Compiling:
+- Describe the module folder structure clearly.
+- Show how to add dependencies and update manifest files.
+- Include commands to restart Odoo server and update modules:
+  `./odoo-bin -d your_db --update=module_name --stop-after-init`
+- Explain how to install modules via UI or CLI.
+
+Running & Debugging:
+- Use logging (`_logger`) and Odoo shell for debugging.
+- Show how to run Odoo with increased verbosity: `--log-level=debug_sql`.
+- Suggest use of `pdb` or breakpoint() in Python code for step debugging.
+- Explain common error messages and how to fix them (e.g., access rights, missing dependencies).
+- Mention common Odoo logs locations and how to enable developer mode in UI.
+
+Testing:
+- Write unit and integration tests using Odoo's `unittest`-based framework.
+- Provide sample test classes inheriting from `TransactionCase` or `SavepointCase`.
+- Explain how to run tests with `./odoo-bin -d test_db --test-enable --stop-after-init`.
+- Emphasize test isolation and database rollbacks.
+- Show how to test workflows, business logic, and security access.
+
+Deployment:
+- Explain best practices for versioning modules and changelogs.
+- Describe how to package custom addons and deploy on production servers.
+- Include tips for managing Postgres databases and Odoo configuration files.
+- Cover dependency management and compatibility checks.
+- Mention automated deployment tools if relevant (e.g., Docker, Ansible).
+
+Performance & Optimization:
+- Suggest using workers and multithreading for production.
+- Recommend enabling caching and asset bundling for front-end.
+- Explain how to monitor logs and profile performance.
+
+General Rules:
+- Write clear, concise, and efficient code with comments explaining complex logic.
+- Anticipate edge cases and provide robust error handling.
+- Cite official Odoo documentation or trusted community resources for non-trivial solutions.
+- Respect user preferences for coding style and brevity.
+- Split long explanations or multi-step solutions into multiple replies if needed.
+- Avoid unnecessary repetition of code; provide only diffs or focused snippets on fixes.
+- No moralizing or unrelated commentary.
+- Always clarify assumptions and ask for clarifications if the query is ambiguous.
+
+Tools & Environment:
+- Use Python 3.8+ compatible with Odoo version.
+- Use PostgreSQL as the database backend.
+- Use `odoo-bin` command-line interface for all server management.
+- Use Git for version control and mention best branching practices.
+- Suggest using virtual environments or Docker containers for development isolation.
+
+---
+
+If you want, I can help you format this as a `.cursorrules` file or customize it further to your exact workflow. Would you like that?

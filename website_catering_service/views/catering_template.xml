@@ -1,0 +1,219 @@
+<odoo>
+  <template id="catering_page_template" name="Catering Page">
+    <t t-call="website.layout">
+      <!-- Styles -->
+      <style>
+        body, .o_main_content { background: transparent !important; }
+        .catering-bg { position: relative; min-height: 100vh; }
+        .catering-bg::before{
+          content:"";
+          position: fixed;
+          inset: 0;
+          background:
+            linear-gradient(0deg, rgba(0,0,0,.22), rgba(0,0,0,.22)),
+            url('/website_catering_service/static/src/img/ba.jpg?v=2') center/cover no-repeat;
+          z-index: 0;
+          filter: saturate(1.05) contrast(1.05);
+          pointer-events: none;
+        }
+        .catering-foreground { position: relative; z-index: 1; }
+        .catering-card{
+          background: rgba(255,255,255,.86);
+          backdrop-filter: blur(3px);
+          -webkit-backdrop-filter: blur(3px);
+          border: 1px solid rgba(255,255,255,.35);
+          border-radius: .75rem;
+        }
+        .catering-title{
+          color: #111;
+          text-shadow: 0 2px 6px rgba(0,0,0,.25);
+        }
+      </style>
+
+      <div class="catering-bg">
+        <div class="container my-5 catering-foreground">
+          <h1 class="text-center mb-5 catering-title">🍽 Catering Service Categories</h1>
+
+          <!-- DYNAMIC CATEGORIES -->
+          <t t-if="categories">
+            <div class="row gy-4">
+              <t t-foreach="categories" t-as="cat">
+                <div class="col-md-4">
+                  <div class="card shadow-sm h-100 catering-card" t-att-data-cat-id="cat.id" t-att-data-cat-name="cat.name">
+                    <t t-if="cat.sequence and cat.sequence &lt;= 10">
+                      <div class="card-header bg-info text-white text-center">
+                        <h4 class="mb-0"><t t-esc="cat.name"/></h4>
+                      </div>
+                    </t>
+                    <t t-else="">
+                      <div class="card-header bg-secondary text-white text-center">
+                        <h4 class="mb-0"><t t-esc="cat.name"/></h4>
+                      </div>
+                    </t>
+
+                    <div class="card-body">
+                      <t t-set="prods" t-value="cat.product_ids.filtered(lambda p: p.sale_ok and p.website_published)"/>
+                      <t t-if="prods">
+                        <t t-foreach="prods" t-as="item">
+                          <div class="d-flex align-items-center mb-2">
+                            <input
+                              type="checkbox"
+                              class="menu-item me-2"
+                              t-att-data-cat-name="cat.name"
+                              t-att-data-id="item.id"
+                              t-att-data-name="item.name"
+                              t-att-data-price="item.list_price"
+                              t-att-data-default=" '1' if (cat.default_product_id and item.id == cat.default_product_id.id) else '0' "
+                            />
+                            <label class="me-2"><t t-esc="item.name"/></label>
+                          </div>
+                        </t>
+                      </t>
+                      <t t-if="not prods">
+                        <div class="text-muted">No <t t-esc="cat.name"/> available.</div>
+                      </t>
+                    </div>
+                  </div>
+                </div>
+              </t>
+            </div>
+          </t>
+
+          <!-- Summary Box -->
+          <div class="row justify-content-center mt-5">
+            <div class="col-md-6">
+              <div class="card shadow catering-card">
+                <div class="card-header bg-dark text-white text-center">
+                  <h5 class="mb-0">🧾 Selected Items Summary</h5>
+                </div>
+                <div class="card-body" id="summary" style="line-height: 1.8;"></div>
+                <div class="card-footer text-end">
+                  <h5>
+                    Total Amount:
+                    <span id="total" class="text-primary">₹0</span>
+                  </h5>
+                </div>
+              </div>
+              <div class="text-end mt-3">
+                <a id="next-btn" href="#" class="btn btn-primary">Next »</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- JS -->
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+      <script type="text/javascript"><![CDATA[
+        $(function () {
+
+          function isDefault($el) {
+            return $el.data('default') === 1 || $el.data('default') === '1' || $el.data('default') === true;
+          }
+
+          function enforceDefaultsOnly() {
+            $(".menu-item").each(function () {
+              const $el = $(this);
+              const def = isDefault($el);
+              this.checked = def;
+              this.defaultChecked = def; // 🔑 override browser restore
+              if (def) {
+                $el.attr("checked", "checked");
+              } else {
+                $el.removeAttr("checked");
+              }
+            });
+            updateSummary();
+          }
+
+          function enforceDefaultsWithRetry() {
+            enforceDefaultsOnly();
+            setTimeout(enforceDefaultsOnly, 50);
+            setTimeout(enforceDefaultsOnly, 200);
+            setTimeout(enforceDefaultsOnly, 500);
+          }
+
+          function collectSelectedItems() {
+            const selected = {};
+            $(".menu-item:checked").each(function () {
+              const $cb = $(this);
+              const cat = $cb.data('cat-name') || $cb.data('category') || 'other';
+              if (!selected[cat]) selected[cat] = [];
+              selected[cat].push({
+                id: $cb.data('id') || null,
+                name: $cb.data('name') || '',
+                price: parseFloat($cb.data('price')) || 0,
+                category: cat
+              });
+            });
+            return selected;
+          }
+
+          let currentTotal = 0;
+          function updateSummary() {
+            const selected = collectSelectedItems();
+            currentTotal = 0;
+            let html = "";
+            Object.keys(selected).forEach(function (catKey) {
+              const items = selected[catKey];
+              if (items && items.length) {
+                html += "<strong>" + (catKey) + "</strong><br/>";
+                items.forEach(function (it) {
+                  html += it.name + "<br/>";
+                  currentTotal += Number(it.price || 0);
+                });
+                html += "<br/>";
+              }
+            });
+            $("#summary").html(html || "<em>No items selected</em>");
+            $("#total").text("₹" + currentTotal);
+          }
+
+          // --- Always enforce defaults ---
+          enforceDefaultsWithRetry();
+
+          // Also enforce on pageshow (when returning with Back button, no refresh)
+          window.addEventListener("pageshow", function () {
+            enforceDefaultsWithRetry();
+          });
+
+          // Update summary when user manually changes checkboxes
+          $(document).on("change", ".menu-item", updateSummary);
+
+          // Next button
+          $("#next-btn").on("click", function (e) {
+            e.preventDefault();
+            const selected = collectSelectedItems();
+            const hasAny = Object.keys(selected).some(k => selected[k] && selected[k].length);
+            if (!hasAny) {
+              const $msg = $('<div/>', {
+                text: 'Please select at least one menu item before proceeding.',
+                css: {
+                  color: '#7a2b2b',
+                  background: '#fff3f3',
+                  border: '1px solid #f5c2c2',
+                  padding: '10px',
+                  'border-radius': '6px',
+                  'margin-bottom': '10px',
+                  'text-align': 'center'
+                }
+              });
+              $("#summary").before($msg);
+              setTimeout(function () { $msg.fadeOut(300, function(){ $msg.remove(); }); }, 3000);
+              return;
+            }
+
+            try {
+              sessionStorage.setItem('from_customer', '1');
+            } catch(e) {}
+
+            window.location.href = '/catering/customer-details?total=' + encodeURIComponent(currentTotal);
+          });
+
+        });
+      ]]></script>
+
+    </t>
+  </template>
+</odoo>

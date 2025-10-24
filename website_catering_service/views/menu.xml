@@ -1,0 +1,10 @@
+<odoo>
+  <data>
+    <record id="menu_catering_service" model="website.menu">
+      <field name="name">Catering Service</field>
+      <field name="url">/catering</field>
+      <field name="parent_id" ref="website.main_menu"/>
+      <field name="sequence" eval="60"/>
+      </record>
+   </data>
+</odoo>

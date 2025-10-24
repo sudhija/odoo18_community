@@ -1,0 +1,8 @@
+
+
+Active
+Resigned
+Abandoned
+Terminated
+Retired
+Suspended

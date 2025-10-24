@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+    <record id="view_vitouzk_vitouzkf_copy_att_form" model="ir.ui.view">
+        <field name="name">vitouzkf.copy.att.form</field>
+        <field name="model">vitouzkf.copy.att</field>
+        <field name="arch" type="xml">
+            <form string="copy Staff Attendance" duplicate="0">
+                <sheet>
+
+
+                    <group>
+                        <group>
+<!--                            <field name="checkintype"/>-->
+                             <field name="date_from"/>
+                             <field name="date_to"/>
+
+
+                        </group>
+
+                    </group>
+
+                    <footer style="height:40px;">
+
+                        <button type="object" name="action_close" string="Close" class="btn-primary"/>
+                        <button type="object" name="action_copy" string="copy Att" class="btn-success" icon="fa-check"/>
+
+                    </footer>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="action_vitouzk_copy_att_view" model="ir.actions.act_window">
+        <field name="name">Copy Staff Attendance</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">vitouzkf.copy.att</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <!--        <field name="context">{'search_default_filter_today':1}</field>-->
+        <field name="view_id" ref="vitou_zk_attendance_free.view_vitouzk_vitouzkf_copy_att_form"/>
+        <!--         <field name="view_ids"-->
+        <!--                       eval="[(5, 0, 0),-->
+        <!--                                  (0, 0, {'view_mode': 'kanban', 'view_id': ref('view_vitouslot_dailypayout_kanban')}),-->
+        <!--                                  (0, 0, {'view_mode': 'list', 'view_id': ref('view_vitouslot_dailypayout_list')}),-->
+        <!--                                  (0, 0, {'view_mode': 'graph', 'view_id': ref('view_vitouslot_metercage_graph')}),-->
+        <!--                                  ]"/>-->
+
+    </record>
+
+
+</odoo>

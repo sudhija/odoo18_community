@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Daily attendance list view-->
+    <record id="zk_machine_attendance_user_view_list" model="ir.ui.view">
+        <field name="name">vitouzkf.zk.user.view.list</field>
+<!--        <field name="model">vitouzkf.daily.attendance</field>-->
+            <field name="model">vitouzkf.zk.user</field>
+        <field name="arch" type="xml">
+            <list string="ZK User" create="false" >
+                <field name="uid"/>
+                <field name="name"/>
+                 <field name="user_id"/>
+                 <field name="device_id"/>
+                <field name="devicename"/>
+                 <field name="device_ip" />
+                  <field name="state"/>
+                <field name="create_date"/>
+                <field name="create_uid"/>
+                <field name="write_date" optional="hide"/>
+                <field name="write_uid" optional="hide"/>
+
+            </list>
+        </field>
+    </record>
+    <record id="zk_machine_attendance_user_view_form" model="ir.ui.view">
+        <field name="name">vitouzkf.zk.user.view.form</field>
+        <field name="model">vitouzkf.zk.user</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+
+
+                    <button name="action_undodone"
+                            string="Undo Done"
+                            icon="fa-undo"
+                            confirm="Undo Done?"
+                            type="object" class="btn-danger" invisible="state != 'done'"
+                            groups="vitou_zk_attendance_free.group_vitouzkf_it,vitou_zk_attendance_free.group_vitouzkf_administrator"
+
+                    />
+                    <!--                    done action-->
+                    <button name="action_done"
+                            string="Done Posted"
+                            icon="fa-check"
+                            type="object" class="btn-info" invisible="state != 'posted'"
+                            confirm="Are you sure to apply Done?"
+                            groups="vitou_zk_attendance_free.group_vitouzkf_it,vitou_zk_attendance_free.group_vitouzkf_administrator"
+                    />
+
+
+                    <field name="state" widget="statusbar" statusbar_visible="posted, done"/>
+                </header>
+
+                <sheet>
+                    <group>
+                        <group>
+
+                            <field name="name" readonly="state !='posted'"/>
+                            <field name="device_id" readonly="state !='posted'"/>
+
+                        </group>
+                        <group>
+                            <field name="uid" readonly="1"/>
+                            <field name="user_id" readonly="1"/>
+                            <field name="device_ip"/>
+                        </group>
+                    </group>
+
+
+
+
+
+                </sheet>
+
+                <chatter/>
+                <!--                 <div class="oe_chatter">-->
+                <!--                    <field name="message_follower_ids" groups="base.group_user"/>-->
+                <!--                    <field name="message_ids"/>-->
+
+                <!--                </div>-->
+            </form>
+        </field>
+    </record>
+    <record id="zk_machine_attendance_user_search_view" model="ir.ui.view">
+        <field name="name">zk_machine_attendance_user.search.view</field>
+        <field name="model">vitouzkf.zk.user</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="uid"/>
+                  <field name="user_id"/>
+                <field name="devicename"/>
+                 <field name="device_ip"/>
+            </search>
+        </field>
+    </record>
+
+    <!--    Attendance analysis action-->
+    <record id="zk_machine_attendance_user_action" model="ir.actions.act_window">
+        <field name="name">ZK User</field>
+        <field name="res_model">vitouzkf.zk.user</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{}</field>
+    </record>
+</odoo>

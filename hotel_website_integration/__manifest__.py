@@ -10,10 +10,16 @@
         'views/website_menu.xml',                 # <-- FIXED filename
         'views/website_hotel_home.xml',
         'views/website_hotel_room_detail.xml',     # keep only this room detail template
-        'views/website_templates.xml'              # contains checkout + thanks
-        # 'data/cron_jobs.xml',  # temporarily disabled until cron method is implemented
-    ],
+        'views/website_templates.xml',              # contains checkout + thanks
+        'data/cron_jobs.xml',  # temporarily disabled until cron method is implemented  
+    ],  
+    'assets': {
+        'web.assets_backend': [
+            'hotel_website_integration/static/src/js/hotel_form.js',
+            #'hotel_website_integration/static/src/xml/hotel_form.xml',
+        ],
+    },
     'installable': True,
     'application': False,
-    'post_init_hook': 'post_init_hook',
+    #'post_init_hook': 'post_init_hook',
 }

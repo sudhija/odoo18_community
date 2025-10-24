@@ -1,6 +1,6 @@
 /** @odoo-module */
 import publicWidget from "@web/legacy/js/public/public_widget";
-import { jsonrpc } from "@web/core/network/rpc_service";
+import { rpc } from "@web/core/network/rpc";  // ✅ correct import
 
 publicWidget.registry.reservation = publicWidget.Widget.extend({
     selector: '.container',
@@ -17,7 +17,7 @@ publicWidget.registry.reservation = publicWidget.Widget.extend({
         this.openingHour = null;
         this.closingHour = null;
         try {
-            const result = await jsonrpc('/pos/get_opening_closing_hours', {});
+            const result = await rpc('/pos/get_opening_closing_hours', {});
             if (result && !result.error) {
                 this.openingHour = result.opening_hour;   // expect "HH:MM AM/PM" or "HH:MM"
                 this.closingHour = result.closing_hour;
@@ -231,27 +231,4 @@ publicWidget.registry.reservation = publicWidget.Widget.extend({
         clearInterval(this._poller);
         return this._super.apply(this, arguments);
     }
-
-    events: {
-    // ... existing events ...
-    'click #booking_confirm_btn': '_onClickConfirmBtn',
-},
-
-    _onClickConfirmBtn: function (ev) {
-        const isPublic = odoo.session_info.user_id === false;
-        if (isPublic) {
-            ev.preventDefault();
-    
-            let params = new URLSearchParams({
-                date: this.$el.find("#date").val(),
-                start_time: this.$el.find("#start_time").val(),
-                end_time: this.$el.find("#end_time").val(),
-                tables: this.$el.find("#tables_input").val(),
-                floors: this.$el.find("#floors").val(),
-            });
-    
-            window.location.href = "/web/login?redirect=/booking/confirm?" + params.toString();
-        }
-    }
-
 });

@@ -1,0 +1,11 @@
+<odoo>
+    <template id="quotation_success_template">
+        <t t-call="website.layout">
+            <div class="container my-5">
+                <h2>Quotation Sent!</h2>
+                <p>Your quotation has been sent to your email.</p>
+                <p><strong>Quotation Number:</strong> <t t-esc="sale_order.name"/></p>
+            </div>
+        </t>
+    </template>
+</odoo>

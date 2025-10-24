@@ -1,0 +1,5 @@
+.o_form_container {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    max-width: 90%; /* adjust if needed */
+}

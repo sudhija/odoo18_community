@@ -1,68 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
-<template id="website_hotel_room_detail" name="Room Detail">
-  <t t-call="website.layout">
-    <div class="container hero">
-      <div class="row">
-        <!-- Left column: Images -->
-        <div class="col-md-6">
-          <t t-if="room.gallery_image_ids">
-            <div id="carouselRoomImages" class="carousel slide">
-              <div class="carousel-inner">
-                <t t-foreach="room.gallery_image_ids" t-as="img" t-esc-disabled="true">
-                  <div t-att-class="'carousel-item %s' % ('active' if loop.index == 1 else '')">
-                    <img t-att-src="'/web/image/website.hotel.room.image/%s/image_1920' % img.id"
-                         t-att-alt="room.name"
-                         class="d-block w-100 img-fluid rounded"/>
-                  </div>
-                </t>
+  <template id="website_hotel_room_detail" name="Room Detail">
+    <t t-call="website.layout">
+      <div class="container hero mt-4">
+        <div class="row">
+          <!-- Left column: Images -->
+          <div class="col-md-6">
+            <t t-if="room.gallery_image_ids">
+              <div id="carouselRoomImages" class="carousel slide">
+                <div class="carousel-inner">
+                  <t t-foreach="room.gallery_image_ids" t-as="img" t-esc-disabled="true">
+                    <div t-att-class="'carousel-item %s' % ('active' if loop.index == 1 else '')">
+                      <img t-att-src="'/web/image/website.hotel.room.image/%s/image_1920' % img.id"
+                           t-att-alt="room.name"
+                           class="d-block w-100 img-fluid rounded shadow-sm"/>
+                    </div>
+                  </t>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselRoomImages" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselRoomImages" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
               </div>
-              <button class="carousel-control-prev" type="button" data-bs-target="#carouselRoomImages" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
-              <button class="carousel-control-next" type="button" data-bs-target="#carouselRoomImages" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
-            </div>
-          </t>
-
-          <!-- Fallback: cover image -->
-          <t t-elif="room.cover_image">
-            <img t-att-src="'/web/image/hotel.room/%s/cover_image' % room.id"
-                 t-att-alt="room.name"
-                 class="img-fluid rounded"/>
-          </t>
-
-          <!-- Fallback: product image -->
-          <t t-elif="product">
-            <img t-att-src="'/web/image/product.template/%s/image_1024' % product.id"
-                 t-att-alt="room.name"
-                 class="img-fluid rounded"/>
-          </t>
-        </div>
-
-        <!-- Right column: Details -->
-        <div class="col-md-6">
-          <h2><t t-esc="room.name"/></h2>
-          <t t-set="price" t-value="product and product.list_price or room.base_price or 0.0"/>
-          <p class="lead">
-            <t t-if="price">₹ <t t-esc="price"/> per night</t>
-            <t t-else="">Contact us for pricing</t>
-          </p>
-
-          <!-- Facilities -->
-          <div class="mb-2">
-            <t t-foreach="room.facility_ids" t-as="f">
-              <span class="badge bg-secondary me-1"><t t-esc="f.name"/></span>
+            </t>
+            <t t-elif="room.cover_image">
+              <img t-att-src="'/web/image/hotel.room/%s/cover_image' % room.id"
+                   t-att-alt="room.name"
+                   class="img-fluid rounded shadow-sm"/>
+            </t>
+            <t t-elif="product">
+              <img t-att-src="'/web/image/product.template/%s/image_1024' % product.id"
+                   t-att-alt="room.name"
+                   class="img-fluid rounded shadow-sm"/>
             </t>
           </div>
 
-          <!-- Room description -->
-          <div class="mt-3">
-            <p><t t-esc="room.description or ''"/></p>
-          </div>
+          <!-- Right column: Room info -->
+          <div class="col-md-6">
+            <h2 class="fw-bold"><t t-esc="room.name"/></h2>
+            <t t-set="price" t-value="product and product.list_price or room.list_price or 0.0"/>
+            <p class="lead mb-4">
+              <t t-if="price">₹ <t t-esc="price"/> per night</t>
+              <t t-else="">Contact us for pricing</t>
+            </p>
 
-          <!-- Booking button -->
-          <a t-att-href="'/hotel/room/%s/book?checkin=%s&amp;checkout=%s' % (room.id, request.params.get('checkin',''), request.params.get('checkout',''))"
-             class="btn btn-primary mt-2">Book this room</a>
+            <div class="room-amenities mb-4">
+              <h5 class="fw-semibold mb-3">Amenities</h5>
+              <div class="row">
+                <t t-foreach="room.amenity_ids" t-as="amenity">
+                  <div class="col-6 col-md-4 d-flex align-items-center mb-3">
+                    <t t-if="amenity.icon">
+                      <img t-att-src="'/web/image/hotel.amenity/%s/icon' % amenity.id"
+                          t-att-alt="amenity.name"
+                          style="width:24px;height:24px;object-fit:contain;margin-right:8px;"/>
+                    </t>
+                    <span><t t-esc="amenity.name"/></span>
+                  </div>
+                </t>
+              </div>
+            </div>
+
+            <!-- Facilities section -->
+            <div class="room-facilities mb-4">
+              <h5 class="fw-semibold mb-3">Facilities</h5>
+              <div class="row">
+                <t t-foreach="room.facility_ids" t-as="facility">
+                  <div class="col-6 col-md-4 d-flex align-items-center mb-3">
+                    <div class="me-2" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">
+                      <img t-if="facility.icon_image"
+                           t-att-src="'/web/image/hotel.facility/%s/icon_image' % facility.id"
+                           style="max-width:32px;max-height:32px;"/>
+                      <span t-if="not facility.icon_image" class="fa fa-circle text-muted"></span>
+                    </div>
+                    <span><t t-esc="facility.name"/></span>
+                  </div>
+                </t>
+              </div>
+            </div>
+
+            <!-- Room description -->
+            <div class="room-description mb-4">
+              <h5 class="fw-semibold mb-2">Description</h5>
+              <p><t t-esc="room.description or ''"/></p>
+            </div>
+
+            <!-- Book now button -->
+            <a t-att-href="'/hotel/room/%s/book?checkin=%s&amp;checkout=%s' % (room.id, request.params.get('checkin',''), request.params.get('checkout',''))"
+               class="btn btn-primary btn-lg mt-2">
+               Book this room
+            </a>
+          </div>
         </div>
       </div>
-    </div>
-  </t>
-</template>
+    </t>
+  </template>
 </odoo>

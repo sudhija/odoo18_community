@@ -1,0 +1,10 @@
+<odoo>
+    <template id="thank_you_template" name="Catering Thank You">
+        <t t-call="website.layout">
+            <div class="container mt-5 mb-5">
+                <h1>Thank You!</h1>
+                <p>Your catering order has been received. We will contact you soon.</p>
+            </div>
+        </t>
+    </template>
+</odoo>

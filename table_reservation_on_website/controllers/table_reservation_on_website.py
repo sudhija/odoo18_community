@@ -6,7 +6,6 @@
 ###############################################################################
 from datetime import datetime, timedelta
 import logging
-
 from odoo import http, _
 from odoo.http import request
 
@@ -20,8 +19,7 @@ class TableReservation(http.Controller):
     # Helpers
     # ------------------------------
     def _time_to_minutes(self, time_val):
-        """Convert float or string to minutes since midnight"""
-        if isinstance(time_val, (float, int)):  # float hours e.g., 10.5 → 10:30
+        if isinstance(time_val, (float, int)):
             hours = int(time_val)
             minutes = int((time_val - hours) * 60)
             return hours * 60 + minutes
@@ -31,14 +29,13 @@ class TableReservation(http.Controller):
         return 0
 
     def _float_to_time(self, hour_float):
-        """Convert float (e.g., 8.5) → "08:30 AM" """
         hours = int(hour_float)
         minutes = int((hour_float - hours) * 60)
         dt = datetime.strptime(f"{hours:02d}:{minutes:02d}", "%H:%M")
         return dt.strftime("%I:%M %p")
 
     def _parse_time(self, value):
-        """Try parsing time in both 12h and 24h formats → return datetime.time"""
+        """Try parsing time in both 12h and 24h formats → return datetime.time or None"""
         if not value:
             return None
         value = str(value).strip()
@@ -54,7 +51,6 @@ class TableReservation(http.Controller):
     # ------------------------------
     @http.route(['/table_reservation'], type='http', auth='public', website=True)
     def table_reservation(self):
-        """ For rendering table reservation template """
         pos_config = request.env['res.config.settings'].sudo().search([], limit=1)
         try:
             opening_val = pos_config.pos_opening_hour
@@ -74,27 +70,85 @@ class TableReservation(http.Controller):
             opening_minutes, closing_minutes = 600, 1080
 
         return request.render("table_reservation_on_website.table_reservation", {
-            'opening_hour': opening_hour,      # "10:00 AM"
-            'closing_hour': closing_hour,      # "06:00 PM"
+            'opening_hour': opening_hour,
+            'closing_hour': closing_hour,
             'opening_minutes': opening_minutes,
             'closing_minutes': closing_minutes,
         })
 
     @http.route(['/restaurant/floors'], type='http', auth='public', website=True, methods=['POST'])
     def restaurant_floors(self, **kwargs):
-        """ To get floor details (step after date/time selection) """
+        """Get floor details and check if the slot is already booked (checks table.reservation)"""
         floors = request.env['restaurant.floor'].sudo().search([])
         payment = request.env['ir.config_parameter'].sudo().get_param(
             "table_reservation_on_website.reservation_charge")
         refund = request.env['ir.config_parameter'].sudo().get_param(
             'table_reservation_on_website.refund')
+
+        date = kwargs.get('date')
+        start_time = kwargs.get('start_time')
+        end_time = kwargs.get('end_time')
+        floor_id = kwargs.get('floors')
+
+        already_booked = False
+        booked_table_names = []
+        available_count = 0
+
+        # Only check when all necessary params are present
+        if date and start_time and end_time and floor_id:
+            # parse date
+            try:
+                date_obj = datetime.strptime(date, "%Y-%m-%d").date()
+            except Exception:
+                date_obj = None
+
+            # parse requested slot times into time objects
+            s_time = self._parse_time(start_time)
+            e_time = self._parse_time(end_time)
+
+            # get all tables for the floor
+            try:
+                floor_id_int = int(floor_id)
+                tables_all = request.env['restaurant.table'].sudo().search([('floor_id', '=', floor_id_int)])
+            except Exception:
+                tables_all = request.env['restaurant.table'].sudo().search([('floor_id', '=', floor_id)])
+
+            # find reservations that day for that floor
+            reservations = request.env['table.reservation'].sudo().search([
+                ('floor_id', '=', floor_id),
+                ('date', '=', date_obj),
+                ('state', '=', 'reserved')
+            ])
+
+            booked_table_ids = set()
+            # check overlap for each reservation
+            for rec in reservations:
+                rec_s = self._parse_time(rec.starting_at)
+                rec_e = self._parse_time(rec.ending_at)
+                if s_time and e_time and rec_s and rec_e:
+                    # overlap if requested_start < rec_end AND requested_end > rec_start
+                    if (s_time < rec_e) and (e_time > rec_s):
+                        booked_table_ids.update(rec.booked_tables_ids.ids)
+                        booked_table_names += rec.booked_tables_ids.mapped('name')
+
+            # compute available tables count
+            all_table_ids = set(tables_all.ids)
+            available_ids = all_table_ids - booked_table_ids
+            available_count = len(available_ids)
+
+            if available_count == 0:
+                already_booked = True
+
         vals = {
             'floors': floors,
-            'date': kwargs.get('date'),
-            'start_time': kwargs.get('start_time'),
-            'end_time': kwargs.get('end_time'),
+            'date': date,
+            'start_time': start_time,
+            'end_time': end_time,
             'payment': payment,
             'refund': refund,
+            'already_booked': already_booked,
+            'booked_tables': booked_table_names,
+            'available_count': available_count,
         }
         return request.render("table_reservation_on_website.restaurant_floors", vals)
 
@@ -144,66 +198,74 @@ class TableReservation(http.Controller):
             if rec.id not in table_inbetween:
                 data_tables[rec.id] = {
                     'id': rec.id,
-                    'name': rec.name,
+                    'name': rec.display_name,  # ✅ use display_name
                     'seats': rec.seats,
                     'rate': rec.rate if payment else 0,
                 }
         return data_tables
 
-
-
-    @http.route(['/booking/confirm'], type="http", auth="public", csrf=False, website=True, methods=['GET', 'POST'])
+    @http.route(['/booking/confirm'], type="http", auth="public", csrf=False, website=True, methods=['POST'])
     def booking_confirm(self, **kwargs):
-        """ Booking confirm flow: 
-            GET → review page (requires login)
-            POST → finalize reservation
-        """
+        """ For booking tables — requires login at confirmation """
+        _logger.info("booking_confirm called with kwargs: %s", {k: kwargs.get(k) for k in ('date','start_time','end_time','tables','floors')})
 
-        # Require login for both GET and POST
+        # Ensure user is logged in
         if request.env.user._is_public():
-            return request.redirect('/web/login?redirect=' + request.httprequest.url)
+            # Store booking details in session before redirecting to login
+            request.session['pending_booking'] = kwargs
+            return request.redirect('/web/login?redirect=/booking/after_login')
 
-        if request.httprequest.method == 'GET':
-            # Show review page
-            return request.render('table_reservation_on_website.reservation_review_page', {
-                'date': kwargs.get('date'),
-                'start_time': kwargs.get('start_time'),
-                'end_time': kwargs.get('end_time'),
-                'tables': kwargs.get('tables'),
-                'floors': kwargs.get('floors'),
-                'payment': request.env['ir.config_parameter'].sudo().get_param(
-                    "table_reservation_on_website.reservation_charge"),
-                'company': request.env.company,
-            })
+        company = request.env.company
 
-        # --- POST Flow: your booking logic here ---
+        if not kwargs.get("tables"):
+            return request.make_response("No tables selected", headers=[('Content-Type', 'text/plain')], status=400)
+
+        # parse table ids
         try:
-            company = request.env.company
-
-            if not kwargs.get("tables"):
-                return request.make_response("No tables selected", headers=[('Content-Type', 'text/plain')], status=400)
-
-            # Parse tables
-            list_tables = [rec for rec in kwargs.get("tables").split(',') if rec]
+            list_tables = [int(rec) for rec in kwargs.get("tables").split(',') if rec]
             record_tables = request.env['restaurant.table'].sudo().search([('id', 'in', list_tables)])
-            amount = [rec.rate for rec in record_tables]
+        except Exception as e:
+            _logger.exception("Failed to parse tables: %s", e)
+            return request.make_response("Invalid table selection", headers=[('Content-Type', 'text/plain')], status=400)
 
-            # Parse times
-            start_str = (kwargs.get("start_time") or "").strip()
-            end_str = (kwargs.get("end_time") or "").strip()
+        # parse start/end times into 24h format
+        start_str = (kwargs.get("start_time") or "").strip()
+        end_str = (kwargs.get("end_time") or "").strip()
+        try:
             start_dt = datetime.strptime(start_str, "%I:%M %p")
             end_dt = datetime.strptime(end_str, "%I:%M %p")
             start_24 = start_dt.strftime("%H:%M")
             end_24 = end_dt.strftime("%H:%M")
+        except Exception:
+            _logger.exception("Failed to parse start/end times: start=%s end=%s", start_str, end_str)
+            return request.make_response("Invalid time format. Please use the booking UI to select times.", headers=[('Content-Type', 'text/plain')], status=400)
 
-            # Check past date
-            date_str = kwargs.get('date')
+        # final sanity: prevent past date/time
+        date_str = kwargs.get('date')
+        try:
             sel_dt = datetime.strptime(f"{date_str} {start_24}", "%Y-%m-%d %H:%M")
             if sel_dt < datetime.now():
                 return request.make_response("Selected date/time is in the past.", headers=[('Content-Type', 'text/plain')], status=400)
+        except Exception:
+            _logger.warning("Could not validate date/time for past check: date=%s start=%s", date_str, start_24)
 
-            # Payment check
+        # 🔹 Conflict check: already reserved?
+        overlapping = request.env['table.reservation'].sudo().search([
+            ('date', '=', date_str),
+            ('state', '=', 'reserved'),
+            ('booked_tables_ids', 'in', record_tables.ids),
+            ('starting_at', '<', end_24),
+            ('ending_at', '>', start_24),
+        ], limit=1)
+
+        if overlapping:
+            msg = f"Sorry, table(s) {', '.join(overlapping.booked_tables_ids.mapped('name'))} are already booked from {overlapping.starting_at} to {overlapping.ending_at}."
+            return request.make_response(msg, headers=[('Content-Type', 'text/plain')], status=400)
+
+        # ✅ No conflict → continue with normal flow...
+        try:
             payment = request.env['ir.config_parameter'].sudo().get_param("table_reservation_on_website.reservation_charge")
+            amount = [rec.rate for rec in record_tables]
 
             if payment:
                 table_product = request.env.ref('table_reservation_on_website.product_product_table_booking').sudo()
@@ -230,7 +292,6 @@ class TableReservation(http.Controller):
                 return request.redirect("/shop/cart")
 
             else:
-                # Create reservation
                 reservation = request.env['table.reservation'].sudo().create({
                     "customer_id": request.env.user.partner_id.id,
                     "booked_tables_ids": [(6, 0, record_tables.ids)],
@@ -242,15 +303,14 @@ class TableReservation(http.Controller):
                     'state': 'reserved',
                     'type': 'website',
                 })
-
                 return request.render('table_reservation_on_website.reservation_success_page', {
                     'reservation': reservation,
                     'company': company,
                     'tables': record_tables,
                 })
 
-        except Exception as e:
-            _logger.exception("Booking failed: %s", e)
+        except Exception:
+            _logger.exception("Unexpected error while processing booking_confirm.")
             return request.make_response("Unexpected server error while processing booking.", headers=[('Content-Type', 'text/plain')], status=500)
 
     @http.route(['/table/reservation/pos'], type='json', auth='user', website=True)
@@ -258,7 +318,6 @@ class TableReservation(http.Controller):
         """ For pos table booking """
         table = request.env['restaurant.table'].sudo().browse(table_id)
         date_and_time = datetime.now()
-        # store as 24-hour strings
         starting_at = (date_and_time + timedelta(hours=5, minutes=30)).time().strftime("%H:%M")
         end_time = (date_and_time + timedelta(hours=6, minutes=30)).time().strftime("%H:%M")
         payment = request.env['ir.config_parameter'].sudo().get_param(
@@ -321,3 +380,14 @@ class TableReservation(http.Controller):
                     # ignore parse issues for now
                     continue
         return table_inbetween
+
+    @http.route(['/booking/after_login'], type='http', auth='user', website=True)
+    def booking_after_login(self, **kwargs):
+        """Process the booking automatically after login."""
+        pending_data = request.session.pop('pending_booking', None)
+        if not pending_data:
+            # No pending data — just go to the reservation page
+            return request.redirect('/table_reservation')
+
+        # Reuse the same booking_confirm logic with stored data
+        return self.booking_confirm(**pending_data)

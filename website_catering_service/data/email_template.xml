@@ -1,0 +1,24 @@
+<odoo>
+  <data>
+    <record id="catering_email_template" model="mail.template">
+      <field name="name">Catering Order Confirmation</field>
+      <field name="model_id" ref="model_website_catering_service"/>
+      <field name="subject">Thanks for your Catering Order</field>
+      <field name="email_from">${(user.email or 'info@example.com')|safe}</field>
+      <field name="email_to">${object.email}</field>
+      <field name="body_html">
+        <![CDATA[
+        <p>Dear ${object.name},</p>
+        <p>Thank you for your catering order. Here are the details:</p>
+
+        <t t-if="object.menu_items">
+            <p><strong>Selected Items:</strong></p>
+            <pre>${object.menu_items}</pre>
+        </t>
+
+        <p>We will contact you shortly!</p>
+        ]]>
+      </field>
+    </record>
+  </data>
+</odoo>

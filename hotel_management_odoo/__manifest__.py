@@ -6,8 +6,8 @@
     'description': """The module helps you to manage rooms, amenities, services, food, events and vehicles. End Users can book rooms and reserve foods from hotel.""",
     'depends': ['account', 'event', 'fleet', 'lunch', 'website', 'portal', 'website_sale'],
     'data': [
-        'security/ir.model.access.csv',
         'security/hotel_management_odoo_groups.xml',
+        'security/ir.model.access.csv',
         'security/hotel_management_odoo_security.xml',
         'data/ir_data_sequence.xml',
         'views/account_move_views.xml',
@@ -33,10 +33,11 @@
     ],
     'assets': {
         'web.assets_backend': [
+            'hotel_management_odoo/static/src/xml/dashboard_templates.xml',
             'hotel_management_odoo/static/src/js/action_manager.js',
             'hotel_management_odoo/static/src/css/dashboard.css',
+            #'hotel_management_odoo/static/src/css/style.css',
             'hotel_management_odoo/static/src/js/dashboard_action.js',
-            'hotel_management_odoo/static/src/xml/dashboard_templates.xml',
         ],
     },
     'images': ['static/description/banner.jpg'],

@@ -1,0 +1,16 @@
+<odoo>
+    <!-- Action first -->
+    <record id="website_menu_pos_dashboard" model="website.menu">
+        <field name="name">POS Manager Dashboard</field>
+        <field name="url">/pos_manager/dashboard</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" type="int">50</field>
+    </record>
+
+    <!-- Then menuitem referencing the action -->
+    <menuitem id="menu_pos_dashboard_root"
+              name="POS Manager Dashboard"
+              parent="website.menu_website_configuration"
+              sequence="101"
+              action="action_pos_manager_dashboard"/>
+</odoo>

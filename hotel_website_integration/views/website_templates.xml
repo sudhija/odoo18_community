@@ -315,10 +315,7 @@
       </div>
     </t>
   </template>
-
-  <!-- Payment Providers List Template -->
-<!-- Payment Providers List Template -->
-<!-- Payment Providers List Template -->
+    
 <template id="website_hotel_payment_providers" name="Hotel Payment Providers">
     <t t-call="website.layout">
         <div class="container my-5">

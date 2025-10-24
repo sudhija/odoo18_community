@@ -1,0 +1,354 @@
+<odoo>
+    <template id="catering_customer_form_template" name="Customer Details">
+        <t t-call="website.layout">
+            <div class="container my-5">
+                <h1 class="text-center mb-5">Customer Details</h1>
+
+                <!-- Disable browser default red borders + make fields narrower -->
+                <style>
+                input:required:invalid,
+                textarea:required:invalid {
+                    box-shadow: none !important;
+                    border-color: #ced4da !important;
+                }
+                .is-invalid {
+                    border-color: red !important;
+                }
+                #customerForm .mb-3 {
+                    max-width: 480px;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                #customerForm .form-control,
+                #customerForm textarea {
+                    width: 100%;
+                }
+                #customerForm #submitBtn {
+                    display: block;
+                    margin: 10px auto 0 auto;
+                    min-width: 180px;
+                }
+                </style>
+
+                <form id="customerForm" action="/catering/customer/submit" method="post" novalidate="novalidate">
+                    <input type="hidden" name="menu_selection" id="menu_selection"/>
+                    <input type="hidden" name="base_total" id="base_total"/>
+                    <input type="hidden" name="final_total" id="hidden_final_total"/>
+                    
+                    <!-- Quantity -->
+                    <div class="mb-3">
+                        <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                        <input type="number" id="quantity" name="quantity" class="form-control" min="30" required="required"/>
+                        <small id="quantityError" class="text-danger" style="display:none;">
+                            Minimum order quantity is 30.
+                        </small>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="mb-3">
+                        <label class="form-label">Total Amount (per unit)</label>
+                        <input type="text" id="total_amount" class="form-control" readonly="readonly"/>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Complete Total Amount</label>
+                        <input type="text" id="final_total_amount" class="form-control" readonly="readonly"/>
+                    </div>
+
+                    <!-- Customer Name -->
+                    <div class="mb-3">
+                        <label class="form-label">Customer Name <span class="text-danger">*</span></label>
+                        <input type="text" id="customer_name" name="customer_name" class="form-control" required="required"/>
+                        <small id="nameError" class="text-danger" style="display:none;">
+                            Name must contain only letters and spaces.
+                        </small>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="text" id="email" name="email" class="form-control"/>
+                        <small id="emailError" class="text-danger" style="display:none;">
+                            Please enter a valid email address.
+                        </small>
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="mb-3">
+                        <label class="form-label">Phone <span class="text-danger">*</span></label>
+                        <input type="text" id="phone" name="phone" class="form-control" required="required"/>
+                        <small id="phoneError" class="text-danger" style="display:none;">
+                            Please enter a valid 10-digit Indian phone number starting with 6-9.
+                        </small>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="mb-3">
+                        <label class="form-label">Address <span class="text-danger">*</span></label>
+                        <textarea name="address" id="address" class="form-control" required="required"></textarea>
+                    </div>
+
+                    <!-- Event Date -->
+                    <div class="mb-3">
+                        <label class="form-label">Event Date <span class="text-danger">*</span></label>
+                        <input type="date" name="event_date" id="event_date" class="form-control" required="required"/>
+                    </div>
+
+                    <!-- Service Type -->
+                    <div class="mb-3">
+                        <label class="form-label">Service Type <span class="text-danger">*</span></label><br/>
+                        <input type="radio" name="service_type" value="takeaway" required="required"/> Take Away<br/>
+                        <input type="radio" name="service_type" value="delivery"/> Delivery &amp; Transportation<br/>
+                        <input type="radio" name="service_type" value="delivery_suppliers"/> Delivery &amp; Transportation &amp; Suppliers
+                    </div>
+
+                    <!-- Number of Suppliers -->
+                    <div class="mb-3" id="suppliers_count_wrapper" style="display:none;">
+                        <label class="form-label">Number of Suppliers <span class="text-danger">*</span></label>
+                        <input type="number" id="suppliers_count" name="suppliers_count" class="form-control" min="1" placeholder="Enter number of suppliers"/>
+                        <small id="suppliersError" class="text-danger" style="display:none;">
+                            Please enter at least 1 supplier.
+                        </small>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn btn-success" disabled="disabled">Get Quotation</button>
+                </form>
+
+<script type="text/javascript">
+document.addEventListener("DOMContentLoaded", function(){
+    var params = new URLSearchParams(window.location.search);
+    var total = params.get("total");
+    if(total){
+        var totalBox = document.getElementById("total_amount");
+        if(totalBox) totalBox.value = total;
+        var baseBox = document.getElementById("base_total");
+        if(baseBox) baseBox.value = total;
+    }
+
+    var form = document.getElementById("customerForm");
+    if(form){
+        form.addEventListener("submit", function(e){
+            var stored = localStorage.getItem("cateringData");
+            if(stored){
+                try{
+                    var parsed = JSON.parse(stored);
+                    var flattened = [];
+                    Object.keys(parsed.items || {}).forEach(function(cat){
+                        (parsed.items[cat] || []).forEach(function(it){
+                            flattened.push({
+                                id: it.id,
+                                name: it.name,
+                                price: it.price,
+                                qty: it.qty || 1,
+                                category: cat
+                            });
+                        });
+                    });
+                    document.getElementById("menu_selection").value = JSON.stringify(flattened);
+                    document.getElementById("base_total").value = parsed.total || 0;
+                }catch(err){
+                    console.error("Error parsing cateringData", err);
+                }
+            }
+            var finalTotal = document.getElementById("final_total_amount").value;
+            document.getElementById("hidden_final_total").value = finalTotal || 0;
+        });
+    }
+});
+</script>
+
+<!-- Validation + dynamic suppliers field -->
+<script type="text/javascript"><![CDATA[
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById('customerForm');
+    const quantityInput = document.getElementById('quantity');
+    const totalAmountInput = document.getElementById('total_amount');
+    const finalTotalInput = document.getElementById('final_total_amount');
+    const hiddenFinalTotal = document.getElementById('hidden_final_total');
+
+    const nameInput = document.getElementById('customer_name');
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+    const addressInput = document.getElementById('address');
+    const dateInput = document.getElementById('event_date');
+    const serviceRadios = document.querySelectorAll('input[name="service_type"]');
+    const submitBtn = document.getElementById('submitBtn');
+
+    const supplierWrapper = document.getElementById('suppliers_count_wrapper');
+    const suppliersInput = document.getElementById('suppliers_count');
+    const suppliersError = document.getElementById('suppliersError');
+
+    const errorMsg = document.getElementById('quantityError');
+    const nameError = document.getElementById('nameError');
+    const emailError = document.getElementById('emailError');
+    const phoneError = document.getElementById('phoneError');
+
+    // ✅ Event Date: only allow from 3 days later
+    (function setMinEventDate(){
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        const minDate = new Date(today);
+        minDate.setDate(today.getDate() + 3);
+
+        const yyyy = minDate.getFullYear();
+        const mm = String(minDate.getMonth() + 1).padStart(2,'0');
+        const dd = String(minDate.getDate()).padStart(2,'0');
+        const minStr = `${yyyy}-${mm}-${dd}`;
+
+        dateInput.setAttribute('min', minStr);
+    })();
+
+    const touched = { quantity:false, name:false, email:false, phone:false, address:false, date:false, suppliers:false };
+
+    function updateFinalTotal() {
+        const quantity = parseInt(quantityInput.value) || 0;
+        const unitPrice = parseFloat(totalAmountInput.value) || 0;
+        const finalVal = (quantity * unitPrice).toFixed(2);
+        finalTotalInput.value = finalVal;
+        hiddenFinalTotal.value = finalVal;
+    }
+
+    function validateName(showError) {
+        const regex = /^[A-Za-z\s]+$/;
+        if (!nameInput.value.trim() || !regex.test(nameInput.value.trim())) {
+            if(showError){ nameError.style.display="block"; nameInput.classList.add("is-invalid"); }
+            return false;
+        }
+        nameError.style.display="none"; nameInput.classList.remove("is-invalid");
+        return true;
+    }
+
+    function validateEmail(showError) {
+        if (!emailInput.value.trim()) { emailError.style.display="none"; emailInput.classList.remove("is-invalid"); return true; }
+        const regex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!regex.test(emailInput.value.trim())) {
+            if(showError){ emailError.style.display="block"; emailInput.classList.add("is-invalid"); }
+            return false;
+        }
+        emailError.style.display="none"; emailInput.classList.remove("is-invalid"); return true;
+    }
+
+    function validatePhone(showError) {
+        const regex=/^[6-9]\d{9}$/;
+        if (!phoneInput.value.trim() || !regex.test(phoneInput.value.trim())) {
+            if(showError){ phoneError.style.display="block"; phoneInput.classList.add("is-invalid"); }
+            return false;
+        }
+        phoneError.style.display="none"; phoneInput.classList.remove("is-invalid"); return true;
+    }
+
+    function validateQuantity(showError) {
+        if ((parseInt(quantityInput.value) || 0) < 30) {
+            if(showError){ errorMsg.style.display='block'; quantityInput.classList.add("is-invalid"); }
+            return false;
+        }
+        errorMsg.style.display='none'; quantityInput.classList.remove("is-invalid"); return true;
+    }
+
+    function selectedServiceType(){
+        const r = document.querySelector('input[name="service_type"]:checked');
+        return r ? r.value : null;
+    }
+
+    function toggleSuppliersVisibility() {
+        if (selectedServiceType() === 'delivery_suppliers') {
+            supplierWrapper.style.display = 'block';
+            suppliersInput.setAttribute('required', 'required');
+        } else {
+            supplierWrapper.style.display = 'none';
+            suppliersInput.removeAttribute('required');
+            suppliersInput.classList.remove('is-invalid');
+            suppliersError.style.display = 'none';
+            suppliersInput.value = '';
+        }
+    }
+
+    function validateSuppliers(showError){
+        if (selectedServiceType() !== 'delivery_suppliers') return true;
+        const val = parseInt(suppliersInput.value) || 0;
+        if (val < 1) {
+            if(showError){ suppliersError.style.display='block'; suppliersInput.classList.add('is-invalid'); }
+            return false;
+        }
+        suppliersError.style.display='none'; suppliersInput.classList.remove('is-invalid'); 
+        return true;
+    }
+
+    function checkFormValidity(showErrors=false) {
+        let valid=true;
+        if(!validateName(showErrors||touched.name)) valid=false;
+        if(!validateEmail(showErrors||touched.email)) valid=false;
+        if(!validatePhone(showErrors||touched.phone)) valid=false;
+        if(!validateQuantity(showErrors||touched.quantity)) valid=false;
+        if(!validateSuppliers(showErrors||touched.suppliers)) valid=false;
+
+        if(!addressInput.value.trim()){ if(showErrors||touched.address) addressInput.classList.add("is-invalid"); valid=false; } 
+        else addressInput.classList.remove("is-invalid");
+
+        if(!dateInput.value || (dateInput.min && dateInput.value < dateInput.min)) { 
+            if(showErrors||touched.date) dateInput.classList.add("is-invalid"); 
+            valid=false; 
+        } else { 
+            dateInput.classList.remove("is-invalid"); 
+        }
+
+        if(!document.querySelector('input[name="service_type"]:checked')) valid=false;
+        submitBtn.disabled=!valid;
+        return valid;
+    }
+
+    toggleSuppliersVisibility();
+
+    quantityInput.addEventListener('input', ()=>{ touched.quantity=true; updateFinalTotal(); checkFormValidity(); });
+    nameInput.addEventListener('input', ()=>{ touched.name=true; checkFormValidity(); });
+    emailInput.addEventListener('input', ()=>{ touched.email=true; checkFormValidity(); });
+    phoneInput.addEventListener('input', ()=>{ touched.phone=true; checkFormValidity(); });
+    addressInput.addEventListener('input', ()=>{ touched.address=true; checkFormValidity(); });
+    dateInput.addEventListener('change', ()=>{ touched.date=true; checkFormValidity(); });
+    serviceRadios.forEach(r=>r.addEventListener('change', ()=>{ toggleSuppliersVisibility(); checkFormValidity(); }));
+    suppliersInput.addEventListener('input', ()=>{ touched.suppliers=true; checkFormValidity(); });
+
+    form.addEventListener('submit', function(e){
+        if(!checkFormValidity(true)){ e.preventDefault(); }
+    });
+
+    updateFinalTotal();
+});
+]]></script>
+
+<!-- New: submit into a new tab then redirect current tab to Thank You -->
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function () {
+    var form = document.getElementById('customerForm');
+    var submitBtn = document.getElementById('submitBtn');
+
+    if (!form || !submitBtn) return;
+
+    submitBtn.addEventListener('click', function (ev) {
+        // if the form isn't valid according to your validation, let existing logic block submission
+        // We only take control when the form would normally submit.
+        // Prevent default to control submission target and immediate redirect.
+        ev.preventDefault();
+
+        // Save current target to restore later
+        var originalTarget = form.target || '';
+
+        // Submit the form into a new tab so the PDF response opens there and backend logic runs unchanged
+        form.target = '_blank';
+        form.submit();
+
+        // Restore original target
+        form.target = originalTarget;
+
+        // Immediately redirect the current tab to the Thank You page
+        // If you prefer a small delay, wrap this in setTimeout(..., 600);
+        window.location.href = '/catering/thank-you';
+    });
+});
+</script>
+
+            </div>
+        </t>
+    </template>
+</odoo>

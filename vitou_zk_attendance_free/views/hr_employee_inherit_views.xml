@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Inherited hr employee for adding new field-->
+    <record id="view_employee_form" model="ir.ui.view">
+        <field name="name">hr.employee.view.form.inherit.hr.zk.attendance
+        </field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//group//field[@name='company_id']" position="after">
+                <field name="status_vitouzk" groups="hr.group_hr_user"/>
+                <field name="departure_reason_id" groups="hr.group_hr_user"/>
+
+            </xpath>
+
+            <xpath expr="//group//field[@name='coach_id']" position="after">
+                <field name="departure_date" groups="hr.group_hr_user"/>
+                <!--                <field name="date_end_vitouzk" groups="base.group_multi_company"/>-->
+
+            </xpath>
+
+            <xpath expr="//page[@name='hr_settings']"
+                   position="after">
+
+                <page name="hr_zk" string="ZK Integration" groups="hr.group_hr_user">
+                    <group>
+                        <group>
+                            <field name="zkuser_id"/>
+                            <field name="zk_isfixshift" widget="boolean_toggle"/>
+                            <field name="checkintype"/>
+                            <field name="rest_hour" widget="float_time"/>
+
+
+                        </group>
+                        <group>
+                            <field name="shift_id"/>
+                            <field name="shift2_id"/>
+                            <field name="shift3_id"/>
+                            <field name="shift4_id"/>
+
+
+                            <!--                            <field name="hour_resting"/>-->
+                        </group>
+                    </group>
+                </page>
+
+            </xpath>
+            <!--            <xpath expr="//search" position="inside">-->
+
+            <!--                <searchpanel>-->
+
+            <!--                    <field name="overtime_status" icon="fa-users" enable_counters="1"/>-->
+
+
+            <!--                </searchpanel>-->
+
+            <!--            </xpath>-->
+        </field>
+    </record>
+</odoo>

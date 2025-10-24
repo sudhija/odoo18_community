@@ -1,0 +1,28 @@
+
+
+
+conn.get_attendance()
+
+raw_logs = conn.get_attendance()
+
+punch_map = {0: 'check_out', 1: 'check_in'}
+
+ action = punch_map.get(log.punch)
+            if action not in ('check_in', 'check_out'):
+                continue  # skip break events
+
+
+log = logs[0]
+print({
+    'uid':             log.uid,             # User’s machine ID (int)
+    'timestamp':       log.timestamp,       # datetime.datetime in local tz
+    'punch':           log.punch,           # 0=check-out, 1=check-in
+    'status':          log.status,          # machine-specific status code
+    'verify_method':   log.verify_method,   # e.g. fingerprint, password
+    'work_code':       log.work_code,       # custom work codes if enabled
+})
+
+
+//return:
+
+{'uid': 1, 'timestamp': datetime.datetime(2022, 5, 12, 9, 10, 16), 'punch': 0}

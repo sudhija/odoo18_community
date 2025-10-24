@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Daily attendance list view-->
+    <record id="daily_attendance_all_flexible_view_list" model="ir.ui.view">
+        <field name="name">vitouzkf.attendance.all.flexible.list</field>
+        <field name="model">vitouzkf.attendance.all.flexible</field>
+        <field name="arch" type="xml">
+
+
+            <list string="Attendance All" create="True" class="bg-secondary"
+                  decoration-info="is_att==False"
+                  decoration-danger="state=='done' and is_att==True"
+                  decoration-warning="state =='voided'"
+                  default_group_by="employee_id" expand="1">
+
+
+                <header>
+
+                    <!--                    <button name="action_reload" type="object" class="btn-primary" display="always"-->
+                    <!--                            icon="fa-refresh" help="Reload"/>-->
+                    <button name="%(action_vitouzk_download_att_flexible_view)d" type="action" class="btn-success"
+                            string="Download" display="always"
+                            help="Download Attendace from ZK Fingerprint device, (process 1)"/>
+                    <button name="action_gen_in_out" type="object" class="btn-info" display="always"
+                            string="Gen" help="Check and Fill in_out according to check_in datetime, (process 3), this is available in paid version"/>
+
+                    <!--                    <button name="action_update_check_out" type="object" class="btn-info" display="always"-->
+                    <!--                            icon="fa-check"-->
+                    <!--                            string="3-Gen" help="Check and fill Checkout Date (process 3)"-->
+                    <!--                            confirm="Update Checkout Date?"/>-->
+                    <button name="%(action_vitouzk_copy_att_view)d" type="action" class="btn-danger"
+                            string="Copy" display="always"
+                            help="Copy to attendance for payroll (process 4)"/>
+
+                    <button name="%(action_vitouzk_done_att_flexible_view)d" type="action" class="btn-danger"
+                            string="Done_Post" display="always"
+                            help="Apply Done or Reset to Post?"/>
+
+                    <button name="%(action_vitouzk_open_report_att_flexible_view)d" type="action" string="Print"
+                            class="btn-primary" display="always"/>
+
+                    <button name="action_reset" type="object" string="Reset" class="btn-warning"
+                            confirm="Reset this record to original?"/>
+
+
+                    <!--                    on select-->
+                    <button name="action_void" type="object" string="Void" class="btn-warning" confirm="Void?"/>
+                    <button name="action_unvoid" type="object" string="Unvoid" class="btn-danger"
+                            confirm="Undo Voided?"/>
+
+                    <button name="action_done" type="object" string="Done" class="btn-success" confirm="Done?"/>
+                    <button name="action_undodone" type="object" string="Undone" class="btn-danger"
+                            confirm="Undo Done?"/>
+
+
+                </header>
+
+                <field name="id" optional="hide"/>
+                <field name="zkuser" optional="hide"/>
+                <field name="zkusername" optional="hide"/>
+                <field name="employee_id"/>
+                <field name="device_id_num" optional="hide"/>
+
+
+                <field name="day"/>
+                <field name="date_inout" optional="hide"/>
+                <field name="check_in"/>
+                <field name="check_out"/>
+                <field name="device_in_out"/>
+                <field name="in_out" optional="hide"/>
+                <field name="is_att"/>
+                <field name="work_hour" optional="show"/>
+                <field name="rest_hour" optional="hide"/>
+                <field name="total_work_hour"/>
+                <field name="checkin_shift_id" optional="show"/>
+
+                <!--                <field name="check_out"/>-->
+                <field name="early_or_late" optional="hide"/>
+                <field name="early_or_late_h" optional="hide"/>
+
+                <field name="state_att" widget="label_selection"
+                       options="{'classes':{'posted':'warning','download':'primary'}}"/>
+                <field name="state" widget="label_selection"
+                       options="{'classes':{'posted':'success','done':'danger','voided':'secondary'}}"/>
+                <field name="device_in_out" widget="label_selection"
+                       options="{'classes': {'in': 'success', 'out': 'info','both':'primary'}}" optional="hide"/>
+
+                <field name="department_id" optional="hide"/>
+                <field name="position_id" optional="hide"/>
+                <field name="company_id" optional="hide"/>
+                <field name="devicename" optional="hide"/>
+                <field name="checkintype" optional="hide"/>
+                <field name="shift_id" optional="hide"/>
+                <field name="shift2_id" optional="hide"/>
+                <field name="shift3_id" optional="hide"/>
+                <field name="shift4_id" optional="hide"/>
+                <field name="is_same_day" optional="hide"/>
+                <field name="time_in_base1" optional="hide" widget="float_time"/>
+                <field name="time_out_base1" optional="hide" widget="float_time"/>
+                <field name="time_in_base2" optional="hide" widget="float_time"/>
+                <field name="time_out_base2" optional="hide" widget="float_time"/>
+                 <field name="time_in_base3" optional="hide" widget="float_time"/>
+                <field name="time_out_base3" optional="hide" widget="float_time"/>
+                 <field name="time_in_base4" optional="hide" widget="float_time"/>
+                <field name="time_out_base4" optional="hide" widget="float_time"/>
+
+                <field name="device_ip" optional="hide"/>
+                <field name="create_date" optional="hide"/>
+                <field name="create_uid" optional="hide"/>
+                <field name="write_date" optional="hide"/>
+                <field name="write_uid" optional="hide"/>
+
+                <!--                <field name="is_danger" invisible="1" optional="hide"/>-->
+            </list>
+        </field>
+    </record>
+
+    <record id="daily_attendance_all_flexible_view_form" model="ir.ui.view">
+        <field name="name">vitouzkf.attendance.all.flexible.form</field>
+        <field name="model">vitouzkf.attendance.all.flexible</field>
+
+        <field name="arch" type="xml">
+            <form string="Manage Attendance" create="True" edit="true" delete="false">
+                <header>
+
+                    <!--                    <div class="dropdown o_dropdown ml-2">-->
+                    <!--                        <button id="myToggler"-->
+                    <!--                                class="btn btn-outline-primary  dropdown-toggle"-->
+                    <!--                                data-bs-toggle="dropdown">-->
+                    <!--                            Actions-->
+                    <!--                        </button>-->
+                    <!--                        <ul class="dropdown-menu">-->
+                    <!--                            <li>-->
+                    <!--                                <button-->
+                    <!--                                        type="object"-->
+                    <!--                                        name="action_reload"-->
+                    <!--                                        string="Action One"-->
+                    <!--                                        class="dropdown-item"-->
+                    <!--                                />-->
+                    <!--                            </li>-->
+                    <!--                            <li>-->
+                    <!--                                <button-->
+                    <!--                                        type="object"-->
+                    <!--                                        name="action_reload"-->
+                    <!--                                        string="Action Two"-->
+                    <!--                                        class="dropdown-item"-->
+                    <!--                                />-->
+                    <!--                            </li>-->
+
+                    <!--                        </ul>-->
+                    <!--                    </div>-->
+
+                    <field name="state" widget="statusbar" statusbar_visible="posted,done"/>
+
+
+                </header>
+                <sheet>
+
+                    <group>
+                        <group>
+
+                            <field name="employee_id" readonly="state == 'done' or state_att=='download'"/>
+                            <field name="device_id_num" readonly="state == 'done' or state_att=='download'"/>
+                            <field name="checkin_shift_id" readonly="state == 'done' or state_att=='download'" invisible="1"/>
+
+                            <field name="in_out" readonly="state == 'done' or state_att=='download'" invisible="1"/>
+                            <field name="check_in" readonly="state == 'done' or state_att=='download'"/>
+
+                            <field name="check_out" invisible="1"/>
+                            <field name="date_inout" invisible="1"/>
+                        </group>
+                        <group>
+                            <!--                            readonly-->
+                            <field name="state_att" widget="label_selection"/>
+                            <field name="status_vitouzk" widget="label_selection"/>
+                            <field name="zkuser"/>
+                            <field name="department_id"/>
+                            <field name="checkintype"/>
+
+
+                            <!--                            hide-->
+                            <field name="devicename" invisible="0"/>
+                            <field name="device_ip" invisible="0"/>
+
+
+                            <field name="shift_id" invisible="1"/>
+                            <field name="shift2_id" invisible="1"/>
+
+                            <field name="time_in_base1" invisible="1"/>
+                            <field name="time_out_base1" invisible="1"/>
+                            <field name="time_in_base2" invisible="1"/>
+                            <field name="time_out_base2" invisible="1"/>
+
+
+                            <field name="work_hour" invisible="1"/>
+                            <field name="rest_hour" invisible="1"/>
+                            <field name="total_work_hour" invisible="1"/>
+                            <field name="is_att" invisible="1"/>
+                            <field name="day" invisible="1"/>
+
+
+                        </group>
+                    </group>
+                </sheet>
+
+            </form>
+
+        </field>
+    </record>
+
+    <record id="daily_attendance_all_flexible_view_graph" model="ir.ui.view">
+        <field name="name">vitouzkf.attendance.all.flexible.graph</field>
+        <field name="model">vitouzkf.attendance.all.flexible</field>
+        <field name="arch" type="xml">
+            <graph string="Worked Hours" type="line" stacked="0" sample="1">
+                <field name="employee_id" type="row"/>
+                <field name="check_in" interval="day" type="col"/>
+                <field name="total_work_hour" type="measure" widget="float_time"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="daily_attendance_all_flexible_view_pivot" model="ir.ui.view">
+        <field name="name">vitouzkf.attendance.all.flexible.pivot</field>
+        <field name="model">vitouzkf.attendance.all.flexible</field>
+        <field name="arch" type="xml">
+            <pivot string="Worked Hours">
+                <field name="department_id" type="row"/>
+                <field name="employee_id" type="row"/>
+                <field name="check_in" type="col" interval="month"/>
+                <field name="check_in" type="col" interval="day"/>
+                <field name="total_work_hour" type="measure" widget="float_time"/>
+
+            </pivot>
+        </field>
+    </record>
+
+
+    <record id="daily_attendance_all_flexible_search_view" model="ir.ui.view">
+        <field name="name">vitouzkf.attendance.all.flexible.search.view</field>
+        <field name="model">vitouzkf.attendance.all.flexible</field>
+        <field name="arch" type="xml">
+            <search >
+                <field name="device_id_num"/>
+                <field name="employee_id"/>
+                <field name="employee_name"/>
+                <field name="day"/>
+                <field name="check_in"/>
+                <field name="is_att"/>
+                <field name="state_att"/>
+                <field name="department_id"/>
+                <field name="company_id"/>
+
+
+                <field name="in_out"/>
+
+
+                <!--                <filter-->
+                <!--                        name="filter_this_month"-->
+                <!--                        string="This Month"-->
+                <!--                        domain="[('check_in','&gt;=', context_today()),('check_in','&lt;=', context_today())]"-->
+                <!--                />-->
+
+                <!--                <filter string="Is Att" name="filter_isatt" domain="[('is_att','=', 'True')]"/>-->
+
+                <filter string="Not Employee" name="filter_not_employee" domain="[('employee_name','=', None)]"/>
+
+                <filter string="Posted" name="filter_posted" domain="[('state','=', 'posted')]"/>
+                <filter string="Done" name="filter_done" domain="[('state','=', 'done')]"/>
+
+                <filter string="Today" name="filter_today"
+                        domain="[('check_in', '&gt;=', context_today().strftime('%Y-%m-%d')), ('check_in', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+
+                <filter string="Today For Att" name="filter_today_for_att"
+                        domain="[('check_in', '&gt;=', context_today().strftime('%Y-%m-%d')), ('check_in', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59')),('is_att','=',True)]"/>
+
+                <filter string="Yesterday" name="filter_yesterday"
+                        domain="[('check_in', '&gt;=', (context_today() + relativedelta(days=1, days=-1)).strftime('%Y-%m-%d')), ('check_in', '&lt;', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Yesterday for Att" name="filter_yesterday_att"
+                        domain="[('check_in', '&gt;=', (context_today() + relativedelta(days=1, days=-1)).strftime('%Y-%m-%d')), ('check_in', '&lt;', context_today().strftime('%Y-%m-%d')),('is_att','=',True)]"/>
+
+                <filter string="This Month" name="filter_this_month"
+                        domain="[('check_in', '&gt;=', context_today().strftime('%Y-%m-01')), ('check_in', '&lt;=', (context_today() + relativedelta(months=1, days=-1)).strftime('%Y-%m-%d'))]"/>
+                <filter string="This Month For Att" name="filter_this_month_att"
+                        domain="[('check_in', '&gt;=', context_today().strftime('%Y-%m-01')), ('check_in', '&lt;=', (context_today() + relativedelta(months=1, days=-1)).strftime('%Y-%m-%d')),('is_att','=',True)]"/>
+
+
+                <filter string="Last Month" name="filter_last_month"
+                        domain="[('check_in', '&gt;=', (context_today() - relativedelta(months=1)).strftime('%Y-%m-01')), ('check_in', '&lt;', context_today().strftime ('%Y-%m-01'))]"/>
+                <filter string="Last Month for Att" name="filter_last_month_att"
+                        domain="[('check_in', '&gt;=', (context_today() - relativedelta(months=1)).strftime('%Y-%m-01')), ('check_in', '&lt;', context_today().strftime ('%Y-%m-01')),('is_att','=', True)]"/>
+
+
+                <searchpanel>
+
+                    <field name="status_vitouzk" icon="fa-users" enable_counters="1"/>
+                    <field name="state" icon="fa-users" enable_counters="1"/>
+                    <field name="for_att" icon="fa-users" enable_counters="1" select="count"/>
+                    <!--                    <field name="department_id" icon="fa-users" enable_counters="1"/>-->
+                    <field name="employee_id" icon="fa-users" enable_counters="1" select="multi"/>
+
+
+                </searchpanel>
+
+                <!--                <group expand="1" string="Group By Staff">-->
+                <!--                    <filter string="Group by Staff" name="groupby_employee_id" domain="[]" context="{'group_by':'employee_id'}"/>-->
+
+                <!--                </group>-->
+            </search>
+
+        </field>
+    </record>
+
+    <!--    Attendance analysis action-->
+    <record id="daily_attendance_all_flexible_action" model="ir.actions.act_window">
+        <field name="name">Attendance Flexible</field>
+        <field name="res_model">vitouzkf.attendance.all.flexible</field>
+        <field name="view_mode">list,form,graph,pivot</field>
+        <field name="view_id" ref="vitou_zk_attendance_free.daily_attendance_all_flexible_view_list"/>
+        <!--        <field name="target">current</field>-->
+
+        <!--        <field name="context">{}</field>-->
+        <field name="context">{'search_default_filter_today': 1,'run_ok':1}</field>
+
+
+    </record>
+</odoo>

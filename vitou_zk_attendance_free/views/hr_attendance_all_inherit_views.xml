@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+              <record id="view_attendance_tree" model="ir.ui.view">
+            <field name="name">hr.attendance.list</field>
+            <field name="model">hr.attendance</field>
+            <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+            <field name="arch" type="xml">
+                <!-- 2. Add your <searchpanel> inside the <search> tag -->
+
+                <xpath expr="//field[@name='create_uid']" position="after">
+                     <field name="zkuser" optional="hidden"/>
+                     <field name="zkusername" optional="hidden"/>
+                     <field name="zk_device_id" optional="hidden"/>
+                     <field name="zk_staff_status" optional="show" widget="label_selection" options="{'classes': {'Active': 'success'}}"/>
+                     <field name="zk_state_att" optional="show" widget="label_selection" options="{'classes': {'posted': 'warning','download':'primary'}}"/>
+
+                </xpath>
+
+            </field>
+        </record>
+
+
+        <!-- 1. Inherit the existing search view for hr.attendance -->
+        <record id="hr_attendance_view_filter" model="ir.ui.view">
+            <field name="name">hr_attendance_view_filter</field>
+            <field name="model">hr.attendance</field>
+            <field name="inherit_id" ref="hr_attendance.hr_attendance_view_filter"/>
+            <field name="arch" type="xml">
+                <!-- 2. Add your <searchpanel> inside the <search> tag -->
+                <xpath expr="//search" position="inside">
+
+                    <field name="check_in"/>
+
+                    <filter string="Today" name="filter_today"
+                            domain="[('check_in', '&gt;=', context_today().strftime('%Y-%m-%d')), ('check_in', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+
+                    <filter string="Yesterday" name="filter_yesterday"
+                            domain="[('check_in', '&gt;=', (context_today() + relativedelta(days=1, days=-1)).strftime('%Y-%m-%d')), ('check_in', '&lt;', context_today().strftime('%Y-%m-%d'))]"/>
+
+                    <filter string="This Month" name="filter_this_month"
+                            domain="[('check_in', '&gt;=', context_today().strftime('%Y-%m-01')), ('check_in', '&lt;=', (context_today() + relativedelta(months=1, days=-1)).strftime('%Y-%m-%d'))]"/>
+
+
+                    <filter string="Last Month" name="filter_last_month"
+                            domain="[('check_in', '&gt;=', (context_today() - relativedelta(months=1)).strftime('%Y-%m-01')), ('check_in', '&lt;', context_today().strftime ('%Y-%m-01'))]"/>
+
+                    <searchpanel>
+                        Filter by employee
+<!--                        <field name="status_vitouzk" string="Staff Status" enable_counters="1"/>-->
+                        <field name="zk_staff_status" icon="fa-users" enable_counters="1"/>
+                        <field name="overtime_status" string="Status" enable_counters="1"/>
+                        <field name="department_id" string="Department" enable_counters="1"/>
+                        <field name="employee_id" string="Employee" select="multi" enable_counters="1"/>
+                    </searchpanel>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>

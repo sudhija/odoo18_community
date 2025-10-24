@@ -1,0 +1,34 @@
+/* Responsive and color styles for POS table reservation extended */
+.floor-card { border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.floor-tables { gap: 12px; display: flex; flex-wrap: wrap; align-items: flex-start; }
+
+.table-box {
+    min-width: 120px;
+    max-width: 160px;
+    height: 92px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
+}
+.table-box:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+
+.status-green { background: linear-gradient(180deg,#34c38f,#2aa873); color: #fff; }
+.status-red { background: linear-gradient(180deg,#f46a6a,#f44336); color: #fff; }
+.status-yellow { background: linear-gradient(180deg,#ffd54f,#ffc107); color: #222; }
+
+.table-name { font-size: 1rem; }
+.table-seats { font-size: 0.8rem; color: rgba(255,255,255,0.9); }
+.table-status { font-size: 0.78rem; opacity: 0.95; }
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .table-box { min-width: 95%; max-width: 95%; height: 84px; }
+    .floor-card { margin-left: 0; margin-right: 0; }
+    .pos-dashboard .card-header { padding: 0.75rem 1rem; }
+}
